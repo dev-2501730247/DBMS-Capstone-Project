@@ -1,0 +1,14 @@
+{
+  "name": "campus-marketplace",
+  "version": "1.0.0",
+  "description": "Campus Marketplace Database - students list, buy and sell used items",
+  "main": "server.js",
+  "scripts": {
+    "setup": "node db/setup.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "*",
+    "mysql2": "^3.24.6"
+  }
+}

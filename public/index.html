@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campus Marketplace</title>
+<style>
+  :root{--bg:#f5f6fa;--card:#fff;--ink:#1d2433;--mute:#6b7385;--brand:#4f46e5;--brand2:#eef0ff;--ok:#16a34a;--bad:#dc2626;--line:#e4e7ee}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+  header{background:var(--brand);color:#fff;padding:14px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+  header h1{margin:0;font-size:20px}
+  header select{padding:6px 8px;border-radius:6px;border:0}
+  nav{display:flex;gap:4px;padding:8px 20px;background:#fff;border-bottom:1px solid var(--line);overflow-x:auto}
+  nav button{border:0;background:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:14px;color:var(--mute);white-space:nowrap}
+  nav button.active{background:var(--brand2);color:var(--brand);font-weight:600}
+  main{max-width:1100px;margin:0 auto;padding:20px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+  .stat{background:var(--card);padding:14px;border-radius:10px;border:1px solid var(--line)}
+  .stat b{display:block;font-size:22px}.stat span{color:var(--mute);font-size:12px}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  input,select,textarea{padding:8px 10px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+  .item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:6px}
+  .item h3{margin:0;font-size:15px}.price{font-size:20px;font-weight:700;color:var(--brand)}
+  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:var(--brand2);color:var(--brand);margin-right:4px}
+  .tag.sold{background:#fee2e2;color:var(--bad)}
+  .muted{color:var(--mute);font-size:12px}
+  .row{display:flex;gap:6px;margin-top:auto;padding-top:6px;flex-wrap:wrap}
+  button.btn{background:var(--brand);color:#fff;border:0;padding:7px 12px;border-radius:6px;cursor:pointer;font-size:13px}
+  button.btn.alt{background:var(--brand2);color:var(--brand)}
+  button.btn.danger{background:#fee2e2;color:var(--bad)}
+  form.card,.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+  form.card{display:grid;gap:10px;max-width:520px}
+  label{font-size:13px;color:var(--mute);display:grid;gap:4px}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:13px}
+  th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line)}th{background:#fafbfe;color:var(--mute)}
+  .scroll{overflow-x:auto}
+  pre{background:#1d2433;color:#e6e9f2;padding:12px;border-radius:8px;overflow-x:auto;font-size:12px;white-space:pre-wrap}
+  #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 18px;border-radius:8px;color:#fff;display:none;z-index:9}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎓 Campus Marketplace</h1>
+  <div>Acting as: <select id="me"></select></div>
+</header>
+<nav id="nav">
+  <button data-tab="market" class="active">Marketplace</button>
+  <button data-tab="sell">Sell an Item</button>
+  <button data-tab="mine">My Listings</button>
+  <button data-tab="wish">Wishlist</button>
+  <button data-tab="txns">Transactions</button>
+  <button data-tab="reports">SQL Reports</button>
+  <button data-tab="schema">Schema</button>
+</nav>
+<main>
+  <section id="market">
+    <div class="stats" id="stats"></div>
+    <div class="filters">
+      <input id="q" placeholder="Search items...">
+      <select id="cat"><option value="">All categories</option></select>
+      <input id="maxp" type="number" placeholder="Max price (₹)" min="0">
+    </div>
+    <div class="grid" id="items"></div>
+  </section>
+
+  <section id="sell" class="hide">
+    <form class="card" id="sellForm">
+      <h3 style="margin:0">List a new item</h3>
+      <label>Title<input name="title" required></label>
+      <label>Description<textarea name="description" rows="3"></textarea></label>
+      <label>Category<select name="category_id" id="sellCat" required></select></label>
+      <label>Price (₹)<input name="price" type="number" min="0" step="1" required></label>
+      <label>Condition<select name="condition"><option>New</option><option>Like New</option><option selected>Good</option><option>Fair</option></select></label>
+      <button class="btn">List item</button>
+    </form>
+  </section>
+
+  <section id="mine" class="hide"><div class="grid" id="myItems"></div></section>
+  <section id="wish" class="hide"><div class="grid" id="wishItems"></div></section>
+  <section id="txns" class="hide"><div class="scroll" id="txnTable"></div></section>
+
+  <section id="reports" class="hide">
+    <div class="filters"><select id="reportSel"></select></div>
+    <div class="card"><b id="repTitle"></b><pre id="repSql"></pre></div>
+    <div class="scroll" id="repTable" style="margin-top:12px"></div>
+  </section>
+
+  <section id="schema" class="hide"><div id="schemaBox"></div></section>
+</main>
+<div id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const api = async (url, opts) => {
+  const r = await fetch(url, opts && { headers:{'Content-Type':'application/json'}, ...opts, body: opts.body && JSON.stringify(opts.body) });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || 'Request failed');
+  return data;
+};
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(msg, ok = true){ const t=$('#toast'); t.textContent=msg; t.style.background=ok?'#16a34a':'#dc2626'; t.style.display='block'; setTimeout(()=>t.style.display='none',2600); }
+const me = () => Number($('#me').value);
+const inr = n => '₹' + Number(n).toLocaleString('en-IN');
+
+function table(rows){
+  if(!rows.length) return '<div class="card muted">No rows.</div>';
+  const cols = Object.keys(rows[0]);
+  return `<table><thead><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${
+    rows.map(r=>`<tr>${cols.map(c=>`<td>${esc(r[c])}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+
+function itemCard(i, mode){
+  const mine = i.seller_id === me();
+  let actions = '';
+  if (i.status === 'Available') {
+    if (mode === 'mine') actions = `<button class="btn alt" onclick="editPrice(${i.item_id},${i.price})">Edit price</button><button class="btn danger" onclick="removeItem(${i.item_id})">Remove</button>`;
+    else if (!mine) actions = `<button class="btn" onclick="buy(${i.item_id})">Buy</button><button class="btn alt" onclick="wish(${i.item_id})">♡ Wishlist</button>`;
+    else actions = '<span class="muted">Your listing</span>';
+  }
+  return `<div class="item">
+    <div><span class="tag">${esc(i.category)}</span><span class="tag">${esc(i.condition)}</span><span class="tag ${i.status==='Sold'?'sold':''}">${esc(i.status)}</span></div>
+    <h3>${esc(i.title)}</h3>
+    <div class="muted">${esc(i.description||'')}</div>
+    <div class="price">${inr(i.price)}</div>
+    <div class="muted">Seller: ${esc(i.seller)} · ${esc(i.hostel||'')}</div>
+    <div class="row">${actions}</div></div>`;
+}
+
+async function loadMarket(){
+  const p = new URLSearchParams();
+  if($('#q').value) p.set('q',$('#q').value);
+  if($('#cat').value) p.set('category',$('#cat').value);
+  if($('#maxp').value) p.set('maxPrice',$('#maxp').value);
+  const [items, s] = await Promise.all([api('/api/items?'+p), api('/api/stats')]);
+  $('#stats').innerHTML = [['Students',s.users],['Items available',s.available_items],['Deals done',s.transactions],['Total volume',inr(s.total_volume)]]
+    .map(([k,v])=>`<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
+  $('#items').innerHTML = items.length ? items.map(i=>itemCard(i)).join('') : '<div class="card muted">No items match.</div>';
+}
+async function loadMine(){
+  const items = await api(`/api/items?seller=${me()}&status=All`);
+  $('#myItems').innerHTML = items.length ? items.map(i=>itemCard(i,'mine')).join('') : '<div class="card muted">You have not listed anything yet.</div>';
+}
+async function loadWish(){
+  const items = await api('/api/wishlist/'+me());
+  $('#wishItems').innerHTML = items.length ? items.map(i=>itemCard(i)).join('') : '<div class="card muted">Wishlist is empty.</div>';
+}
+async function loadTxns(){
+  const rows = await api('/api/transactions');
+  $('#txnTable').innerHTML = table(rows.map(r=>({ID:r.txn_id,Date:r.txn_date,Item:r.title,Seller:r.seller,Buyer:r.buyer,Paid:inr(r.price_paid),Mode:r.payment_mode,Rating:r.rating?'★'.repeat(r.rating):'—'})));
+}
+async function loadReport(){
+  const r = await api('/api/reports/'+$('#reportSel').value);
+  $('#repTitle').textContent = r.title; $('#repSql').textContent = r.sql; $('#repTable').innerHTML = table(r.rows);
+}
+async function loadSchema(){
+  const rows = await api('/api/schema');
+  $('#schemaBox').innerHTML = rows.map(r=>`<div class="card" style="margin-bottom:10px"><b>${esc(r.type.toUpperCase())}: ${esc(r.name)}</b><pre>${esc(r.sql)}</pre></div>`).join('');
+}
+
+async function buy(id){
+  const mode = prompt('Payment mode? (Cash / UPI / Card)','UPI'); if(!mode) return;
+  try { await api('/api/transactions',{method:'POST',body:{item_id:id,buyer_id:me(),payment_mode:mode}}); toast('Purchase successful!'); loadMarket(); loadWish(); }
+  catch(e){ toast(e.message,false); }
+}
+async function wish(id){ await api('/api/wishlist',{method:'POST',body:{user_id:me(),item_id:id}}); toast('Added to wishlist'); }
+async function removeItem(id){ if(!confirm('Remove this listing?'))return; try{ await api('/api/items/'+id,{method:'DELETE'}); toast('Listing removed'); loadMine(); }catch(e){toast(e.message,false);} }
+async function editPrice(id,old){ const p = prompt('New price (₹)',old); if(p===null)return; try{ await api('/api/items/'+id,{method:'PUT',body:{price:Number(p)}}); toast('Price updated'); loadMine(); }catch(e){toast(e.message,false);} }
+
+$('#sellForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const f = Object.fromEntries(new FormData(e.target)); f.seller_id = me(); f.price = Number(f.price); f.category_id = Number(f.category_id);
+  try { await api('/api/items',{method:'POST',body:f}); toast('Item listed!'); e.target.reset(); show('market'); }
+  catch(err){ toast(err.message,false); }
+});
+
+const loaders = { market:loadMarket, mine:loadMine, wish:loadWish, txns:loadTxns, reports:loadReport, schema:loadSchema, sell:()=>{} };
+function show(tab){
+  document.querySelectorAll('main > section').forEach(s=>s.classList.toggle('hide', s.id!==tab));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  loaders[tab]();
+}
+$('#nav').addEventListener('click', e=>{ if(e.target.dataset.tab) show(e.target.dataset.tab); });
+['#q','#cat','#maxp'].forEach(s=>$(s).addEventListener('input', loadMarket));
+$('#me').addEventListener('change', ()=>{ const t=document.querySelector('nav .active').dataset.tab; show(t); });
+$('#reportSel').addEventListener('change', loadReport);
+
+(async function init(){
+  const [users, cats, reps] = await Promise.all([api('/api/users'), api('/api/categories'), api('/api/reports')]);
+  $('#me').innerHTML = users.map(u=>`<option value="${u.user_id}">${esc(u.name)}</option>`).join('');
+  const opts = cats.map(c=>`<option value="${c.category_id}">${esc(c.name)}</option>`).join('');
+  $('#cat').innerHTML += opts; $('#sellCat').innerHTML = opts;
+  $('#reportSel').innerHTML = reps.map(r=>`<option value="${r.key}">${esc(r.title)}</option>`).join('');
+  show('market');
+})();
+</script>
+</body>
+</html>

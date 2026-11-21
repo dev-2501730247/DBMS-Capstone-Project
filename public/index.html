@@ -479,14 +479,30 @@ function table(rows){
     rows.map(r=>`<tr>${cols.map(c=>`<td>${esc(r[c])}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
 }
 
+
 async function uploadPhoto(file){
-  if (file.size > 3 * 1024 * 1024) throw new Error('Image must be 3 MB or smaller');
-  const fd = new FormData(); fd.append('photo', file);
-  const r = await fetch('/api/upload', { method:'POST', body:fd, credentials:'same-origin' });
+  if (file.size > 3 * 1024 * 1024) {
+    throw new Error('Image must be 3 MB or smaller');
+  }
+
+  const fd = new FormData();
+  fd.append('photo', file);
+
+  const r = await fetch(`${API_BASE}/api/upload`, {
+    method: 'POST',
+    body: fd,
+    credentials: 'include'
+  });
+
   const d = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(d.error || 'Upload failed');
+
+  if (!r.ok) {
+    throw new Error(d.error || 'Upload failed');
+  }
+
   return d.url;
 }
+
 
 /* ----- modal form helper: returns form data, or null if cancelled ----- */
 const fld = (label, input) => `<label>${label}${input}</label>`;

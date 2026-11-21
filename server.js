@@ -13,6 +13,22 @@ if (!process.env.JWT_SECRET) console.warn('JWT_SECRET not set: using a random se
 
 const pool = mysql.createPool({ ...cfg, decimalNumbers: true, dateStrings: true, connectionLimit: 10 });
 const app = express();
+
+const FRONTEND_ORIGIN = 'https://uniolx.yashvats20-29.workers.dev';
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', FRONTEND_ORIGIN);
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
 app.use(express.json({ limit: '50kb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 

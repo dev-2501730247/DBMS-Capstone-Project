@@ -66,8 +66,17 @@ const imageOk = v => !v || /^(https?:\/\/\S{3,480}|\/uploads\/[a-f0-9]{32}\.(jpg
 /* ---------- Auth (bcrypt + JWT in an httpOnly cookie) ---------- */
 const getCookie = (req, name) => (req.headers.cookie || '').split(';').map(c => c.trim().split('='))
   .filter(([k]) => k === name).map(([, ...v]) => decodeURIComponent(v.join('=')))[0];
-const startSession = (res, id) => res.cookie('token', jwt.sign({ id }, SECRET, { expiresIn: '7d' }),
-  { httpOnly: true, sameSite: 'lax', maxAge: 7 * 864e5, secure: process.env.NODE_ENV === 'production' });
+
+const startSession = (res, id) => res.cookie(
+  'token',
+  jwt.sign({ id }, SECRET, { expiresIn: '7d' }),
+  {
+    httpOnly: true,
+    sameSite: 'none',
+    secure: true,
+    maxAge: 7 * 864e5
+  }
+);
 
 const attempts = new Map(); // tiny in-memory login rate limiter: 10 tries / 15 min / IP
 const limited = ip => {

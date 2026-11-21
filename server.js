@@ -179,18 +179,42 @@ function sniffImage(b) {
 }
 app.post('/api/upload',
   (req, res, next) => upload.single('photo')(req, res, err => {
-    if (err) return res.status(400).json({ error: err.code === 'LIMIT_FILE_SIZE' ? 'Image must be 3 MB or smaller' : 'Upload failed' });
+    if (err) {
+      return res.status(400).json({
+        error: err.code === 'LIMIT_FILE_SIZE'
+          ? 'Image must be 3 MB or smaller'
+          : 'Upload failed'
+      });
+    }
     next();
   }),
   h(async (req, res) => {
     if (!req.file) throw new HttpError(400, 'Choose an image to upload');
-    const ext = sniffImage(req.file.buffer);
-    if (!ext) throw new HttpError(400, 'Only JPG, PNG, WEBP or GIF images are allowed');
-    const name = crypto.randomBytes(16).toString('hex') + '.' + ext;
-    await fs.promises.writeFile(path.join(UPLOAD_DIR, name), req.file.buffer);
-    res.status(201).json({ url: '/uploads/' + name });
-  }));
 
+    const ext = sniffImage(req.file.buffer);
+    if (!ext) {
+      throw new HttpError(400, 'Only JPG, PNG, WEBP or GIF images are allowed');
+    }
+
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'uniolx/products',
+          resource_type: 'image',
+          allowed_formats: ['jpg', 'png', 'webp', 'gif']
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+
+      stream.end(req.file.buffer);
+    });
+
+    res.status(201).json({ url: result.secure_url });
+  })
+);
 /* ---------- Items (CRUD) ---------- */
 const SORTS = { newest: 'listed_at DESC, item_id DESC', price_asc: 'price ASC, item_id DESC', price_desc: 'price DESC, item_id DESC' };
 

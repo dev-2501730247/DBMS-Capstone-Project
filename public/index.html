@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UniOlx · Snag it. Flip it. Repeat.</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Caveat:wght@700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--deep:#3E6591;--coral:#FC6B64;--snow:#EEF1E8;--sky:#AFC8D4;--blue:#7BA0CB;--pink:#FDC4C3;
+    --card:#F9FBF6;--ink:#23364D;--mute:#4A6280;--line:#C9D8E0;--sand:#DCE7EC;--err:#B5342D;
+    --display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;--body:'Figtree','Segoe UI',system-ui,sans-serif;--hand:'Caveat','Segoe Script',cursive;
+    --star:polygon(50.0% 0.0%, 56.4% 9.5%, 65.5% 2.4%, 68.6% 13.5%, 79.4% 9.5%, 79.0% 21.0%, 90.5% 20.6%, 86.5% 31.4%, 97.6% 34.5%, 90.5% 43.6%, 100.0% 50.0%, 90.5% 56.4%, 97.6% 65.5%, 86.5% 68.6%, 90.5% 79.4%, 79.0% 79.0%, 79.4% 90.5%, 68.6% 86.5%, 65.5% 97.6%, 56.4% 90.5%, 50.0% 100.0%, 43.6% 90.5%, 34.5% 97.6%, 31.4% 86.5%, 20.6% 90.5%, 21.0% 79.0%, 9.5% 79.4%, 13.5% 68.6%, 2.4% 65.5%, 9.5% 56.4%, 0.0% 50.0%, 9.5% 43.6%, 2.4% 34.5%, 13.5% 31.4%, 9.5% 20.6%, 21.0% 21.0%, 20.6% 9.5%, 31.4% 13.5%, 34.5% 2.4%, 43.6% 9.5%);--blob:58% 42% 55% 45%/50% 60% 40% 50%;
+    --outline:drop-shadow(2px 0 0 #F9FBF6) drop-shadow(-2px 0 0 #F9FBF6) drop-shadow(0 2px 0 #F9FBF6) drop-shadow(0 -2px 0 #F9FBF6) drop-shadow(0 6px 0 rgba(35,54,77,.3))}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--body);color:var(--ink);line-height:1.5;background-color:var(--snow);
+    background-image:radial-gradient(circle,rgba(123,160,203,.30) 1.2px,transparent 1.5px);background-size:22px 22px}
+  h1,h2,h3{font-family:var(--display);letter-spacing:-.01em}
+  h3{font-size:18px;color:var(--deep);margin:0 0 8px}
+  :focus-visible{outline:3px solid var(--coral);outline-offset:2px}
+  .hide{display:none!important}
+  .muted{color:var(--mute);font-size:12px}
+  code{background:var(--sand);padding:1px 5px;border-radius:4px;font-size:12px}
+  svg{display:block}
+  /* scrollbars in the site colours */
+  ::-webkit-scrollbar{width:12px;height:12px}
+  ::-webkit-scrollbar-track{background:var(--sand)}
+  ::-webkit-scrollbar-thumb{background:var(--blue);border:3px solid var(--sand);border-radius:99px}
+  ::-webkit-scrollbar-thumb:hover{background:var(--deep)}
+  ::-webkit-scrollbar-corner{background:var(--sand)}
+  @supports not selector(::-webkit-scrollbar){*{scrollbar-width:thin;scrollbar-color:var(--blue) var(--sand)}}
+
+  /* controls */
+  input,select,textarea{width:100%;padding:10px 12px;border:2px solid var(--ink);border-radius:10px;background:var(--card);font:inherit;color:var(--ink)}
+  input:focus,select:focus,textarea:focus{outline:0;box-shadow:0 0 0 3px rgba(252,107,100,.45)}
+  label{display:grid;gap:4px;font-size:13px;font-weight:600;color:var(--mute)}
+  .btn{display:inline-flex;align-items:center;gap:6px;font:700 13px var(--body);border:2px solid var(--ink);border-radius:10px;padding:7px 14px;cursor:pointer;background:var(--coral);color:var(--ink);box-shadow:0 3px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+  .btn:hover{background:var(--deep);color:var(--snow)}
+  .btn:active{transform:translateY(3px);box-shadow:0 0 0 var(--ink)}
+  .btn.alt{background:var(--card);color:var(--ink)} .btn.alt:hover{background:var(--sand)}
+  .btn.danger{background:var(--card);color:var(--deep)} .btn.danger:hover{background:var(--deep);color:#fff}
+  .btn.light{background:var(--snow);color:var(--deep)} .btn.light:hover{background:var(--card)}
+  .btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .card{background:var(--card);border:2px solid var(--ink);border-radius:18px;padding:18px;box-shadow:4px 4px 0 var(--ink)}
+  form.card{display:grid;gap:12px}
+
+  /* cutout stickers */
+  .cut svg,.cutout svg{filter:var(--outline)}
+  .burst{position:absolute;display:grid;place-items:center;text-align:center;background:var(--snow);clip-path:var(--star);font:700 21px/.95 var(--hand);color:var(--deep)}
+  .note{font:700 24px var(--hand);color:var(--ink)}
+  .hero-banner .note{color:var(--snow)}
+
+  /* sign in / sign up */
+  #auth{min-height:100vh;display:grid;grid-template-columns:1.15fr 1fr}
+  .hero{position:relative;background:var(--blue);color:var(--ink);padding:40px 44px 0;display:flex;flex-direction:column;gap:20px;overflow:hidden}
+  .hero::before{content:"";position:absolute;right:-110px;top:-90px;width:380px;height:380px;border-radius:var(--blob);background:var(--coral)}
+  .hero::after{content:"";position:absolute;left:-90px;bottom:90px;width:240px;height:240px;border-radius:50%;background:var(--pink)}
+  .hero>*{position:relative;z-index:1}
+  .logo{display:flex;align-items:center;gap:12px;font:800 40px var(--display)}
+  .logo img{height:88px;width:auto;display:block}
+  .hero h1{font:800 clamp(44px,5.6vw,76px)/.98 var(--display);margin:6px 0 12px}
+  .hero h1 span{display:block}
+  .hero p{margin:0;max-width:36ch;font-size:17px;opacity:.9}
+  .collage{position:relative;flex:1;min-height:260px}
+  .collage .cut{position:absolute}
+  .ptag{position:absolute;display:flex;gap:12px;align-items:baseline;background:var(--snow);color:var(--ink);border:2px solid var(--ink);border-radius:10px;padding:6px 14px 6px 32px;box-shadow:3px 3px 0 var(--ink);font:700 13px var(--body)}
+  .ptag::before{content:"";position:absolute;left:11px;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:var(--deep);border:2px solid var(--ink)}
+  .ptag span{font:800 17px var(--display);color:var(--deep)}
+  .strip{margin:0 -44px;background:var(--ink);color:var(--snow);overflow:hidden}
+  .track{display:flex;width:max-content;animation:slide 30s linear infinite}
+  .track span{padding:10px 18px;font:700 14px var(--body);white-space:nowrap}
+  @keyframes slide{to{transform:translateX(-50%)}}
+  .auth-side{display:flex;align-items:center;justify-content:center;padding:32px}
+  .auth-card{width:100%;max-width:410px;display:grid;gap:14px;background:var(--card);border:2px solid var(--ink);border-radius:22px;box-shadow:7px 7px 0 var(--ink);padding:26px}
+  .auth-card h2{margin:0;font-size:32px;color:var(--deep);line-height:1}
+  .auth-card form{display:grid;gap:12px}
+  .signup-prompt{margin-top:2px;text-align:center;color:var(--mute);font-size:13px}
+  .signup-prompt button{border:0;background:none;padding:0 0 0 4px;color:var(--deep);font:800 13px var(--body);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+  .signup-prompt button:hover{color:var(--coral)}
+  .brand-m{display:none;align-items:center;gap:8px;font:800 22px var(--display);color:var(--deep)}
+  .brand-m img{height:46px;width:auto}
+  .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--sand);border:2px solid var(--ink);border-radius:12px;padding:3px}
+  .seg button{border:0;background:none;padding:8px;border-radius:8px;font:700 14px var(--body);color:var(--mute);cursor:pointer}
+  .seg button.on{background:var(--deep);color:var(--snow)}
+  #authErr{color:var(--err);font-size:13px;font-weight:700;min-height:18px}
+
+  /* app shell */
+  #app{display:grid;grid-template-columns:244px 1fr;min-height:100vh}
+  aside{position:sticky;top:0;height:100vh;background:var(--sky);color:var(--ink);display:flex;flex-direction:column;padding:20px 14px;overflow:hidden;border-right:2px solid var(--ink)}
+  aside::after{content:"";position:absolute;right:-70px;bottom:-70px;width:200px;height:200px;border-radius:50%;background:#94B3CC;z-index:0}
+  aside>*{position:relative;z-index:1}
+  aside .logo{font-size:27px;padding:0 4px;gap:8px} aside .logo img{height:58px}
+  aside .tagline{font:700 18px var(--hand);opacity:.85;padding:0 8px;margin-top:4px;white-space:nowrap}
+  nav{display:flex;flex-direction:column;gap:3px;margin:18px 0;flex:1;overflow-y:auto}
+  nav button{display:flex;align-items:center;gap:10px;border:0;background:none;text-align:left;padding:9px 12px;border-radius:12px;cursor:pointer;font:600 14px var(--body);color:var(--ink)}
+  nav button:hover{background:rgba(62,101,145,.16)}
+  nav button.active{background:var(--snow);color:var(--deep);font-weight:700;box-shadow:3px 3px 0 rgba(35,54,77,.35)}
+  nav svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .promo{background:var(--pink);color:var(--ink);border:2px solid var(--ink);border-radius:16px;padding:12px 14px;display:grid;gap:6px;box-shadow:3px 3px 0 rgba(35,54,77,.35);margin-bottom:12px;transform:rotate(-1.5deg)}
+  .promo b{font:800 16px var(--display);color:var(--deep)} .promo span{font-size:12px}
+  .who{border-top:1px solid rgba(35,54,77,.25);padding:12px 6px 0;display:grid;gap:8px;font-size:14px;font-weight:600}
+  main{padding:26px 32px 56px;max-width:1140px;width:100%;min-width:0}
+  .page-head{margin-bottom:18px}
+  .page-head h2{margin:0;font-size:32px;color:var(--deep);line-height:1.05}
+  .page-head p{margin:4px 0 0;color:var(--mute)}
+
+  /* marketplace hero + widgets */
+  .hero-banner{position:relative;background:var(--deep);color:var(--snow);border:2px solid var(--ink);border-radius:26px;box-shadow:6px 6px 0 var(--ink);padding:26px 30px;display:grid;grid-template-columns:1.35fr 1fr;gap:16px;overflow:hidden;margin-bottom:18px}
+  .hero-banner::before{content:"";position:absolute;right:-70px;top:-90px;width:320px;height:320px;border-radius:var(--blob);background:var(--coral)}
+  .hero-banner::after{content:"";position:absolute;left:-50px;bottom:-80px;width:190px;height:190px;border-radius:50%;background:#335A86}
+  .hb-text,.hb-art{position:relative;z-index:1}
+  .hero-banner h2{font:800 clamp(26px,3.3vw,40px)/1.04 var(--display);margin:2px 0 0}
+  .searchbar{display:flex;align-items:center;gap:8px;background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:3px 6px 3px 16px;margin-top:16px;box-shadow:0 4px 0 var(--ink);color:var(--ink)}
+  .searchbar svg{width:20px;height:20px;flex:none;fill:none;stroke:var(--deep);stroke-width:2.4;stroke-linecap:round}
+  .searchbar input{border:0;background:none;box-shadow:none!important;padding:10px 4px}
+  .hb-art{min-height:170px}
+  .hb-art .cut{position:absolute}
+  .ticker{overflow:hidden;background:var(--ink);color:var(--snow);border-radius:999px;margin-bottom:14px}
+  .ticker .track{animation-duration:45s}
+  .chips{display:flex;gap:8px;overflow-x:auto;padding:4px 4px 14px;margin:0 -4px}
+  .chip{flex:none;display:flex;align-items:center;gap:8px;padding:5px 14px 5px 5px;border:2px solid var(--ink);border-radius:999px;background:var(--card);font:700 13px var(--body);color:var(--ink);cursor:pointer;box-shadow:0 3px 0 var(--ink)}
+  .chip .ci{width:30px;height:30px;border-radius:50%;background:var(--sand);display:grid;place-items:center;color:var(--deep)}
+  .chip .ci svg{width:21px;height:21px}
+  .chip .ci svg[fill=none]{width:17px;height:17px}
+  .chip.on{background:var(--deep);color:var(--snow)} .chip.on .ci{background:var(--snow)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:18px}
+  .stat{position:relative;overflow:hidden;border:2px solid var(--ink);border-radius:18px;padding:14px 18px;box-shadow:4px 4px 0 var(--ink)}
+  .stat::after{content:"";position:absolute;right:-16px;bottom:-22px;width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,.17)}
+  .stat:nth-child(2)::after{border-radius:16px;transform:rotate(25deg)}
+  .stat:nth-child(3)::after{border-radius:var(--blob)}
+  .stat:nth-child(4)::after{border-radius:50% 50% 0 50%}
+  .stat b{position:relative;display:block;font:800 30px/1.1 var(--display)} .stat span{position:relative;font-size:13px;font-weight:600}
+  .stat:nth-child(1){background:var(--deep);color:var(--snow)}
+  .stat:nth-child(2){background:var(--coral);color:var(--ink)}
+  .stat:nth-child(3){background:var(--blue);color:var(--ink)}
+  .stat:nth-child(4){background:var(--pink);color:var(--ink)}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .filters input,.filters select{width:auto;flex:0 1 auto;max-width:100%}
+
+  /* listing cards */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:20px}
+  .item{background:var(--card);border:2px solid var(--ink);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;box-shadow:5px 5px 0 var(--ink)}
+  .item .body{padding:12px 15px 15px;display:flex;flex-direction:column;gap:7px;flex:1}
+  .thumb{position:relative;height:172px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:2px solid var(--ink)}
+  .thumb::before{content:"";position:absolute;width:150px;height:150px;border-radius:var(--blob);background:rgba(249,251,246,.5)}
+  .thumb .cutout{position:relative;width:104px;transform:rotate(-6deg)}
+  .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+  .t0{background:#CFE0E8} .t1{background:var(--pink)} .t2{background:var(--sky)} .t3{background:#E4ECF0}
+  .sticker{position:absolute;left:10px;top:10px;z-index:2;background:var(--pink);color:var(--deep);border:2px solid var(--ink);border-radius:8px;padding:0 8px;font:800 11px/18px var(--body);transform:rotate(-5deg)}
+  .sticker.sold{background:var(--deep);color:var(--snow)}
+  .heart{position:absolute;right:10px;top:10px;z-index:2;width:36px;height:36px;border-radius:50%;border:2px solid var(--ink);background:var(--card);display:grid;place-items:center;cursor:pointer;color:var(--deep);padding:0}
+  .heart svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2}
+  .heart.on{background:var(--coral);color:var(--ink)} .heart.on svg{fill:currentColor}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 9px;border:1.5px solid var(--ink);border-radius:99px;background:var(--snow);margin-right:4px}
+  .item h3{margin:0;font-size:17px;color:var(--ink);line-height:1.2}
+  .price{align-self:flex-start;font:800 20px var(--display);color:var(--snow);padding:2px 14px 2px 22px;clip-path:polygon(12px 0,100% 0,100% 100%,12px 100%,0 50%);
+    background:radial-gradient(circle at 11px 50%,var(--card) 3px,transparent 3.5px),var(--deep)}
+  .seller{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mute);font-weight:600}
+  .av{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:800 11px var(--display);color:var(--ink);border:1.5px solid var(--ink)}
+  .a0{background:var(--deep);color:#fff} .a1{background:var(--coral)} .a2{background:var(--blue)} .a3{background:var(--pink)}
+  .row{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto;padding-top:6px;align-items:center}
+  .empty{display:grid;place-items:center;gap:6px;text-align:center;padding:34px 20px;border:2px dashed var(--sky);border-radius:20px;color:var(--mute);font-weight:600;grid-column:1/-1}
+  .empty .cutout{width:70px}
+
+  /* sell + profile widgets */
+  .sell-wrap{display:grid;grid-template-columns:minmax(0,520px) minmax(240px,300px);gap:28px;align-items:start}
+  .preview-label{font:700 22px var(--hand);color:var(--deep);margin:0 0 6px 4px}
+  .profile-hero{display:flex;align-items:center;gap:18px;background:var(--deep);color:var(--snow);border:2px solid var(--ink);border-radius:22px;box-shadow:5px 5px 0 var(--ink);padding:20px 24px;margin-bottom:18px;overflow:hidden;position:relative}
+  .profile-hero::after{content:"";position:absolute;right:-40px;top:-50px;width:180px;height:180px;border-radius:var(--blob);background:var(--coral)}
+  .blobav{position:relative;z-index:1;width:76px;height:76px;flex:none;display:grid;place-items:center;border-radius:var(--blob);background:var(--snow);color:var(--deep);font:800 34px var(--display);border:2px solid var(--ink)}
+  .profile-hero div{position:relative;z-index:1} .profile-hero b{font:800 24px var(--display);display:block}
+  .pill{display:inline-block;background:var(--snow);color:var(--deep);border:2px solid var(--ink);border-radius:99px;padding:0 10px;font:800 11px/18px var(--body);margin-top:4px}
+
+  /* tables, code, chat */
+  .scroll{overflow-x:auto}
+  table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:2px solid var(--ink);border-radius:14px;overflow:hidden;font-size:13px;box-shadow:4px 4px 0 var(--ink)}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--sand);color:var(--ink);font-weight:700;border-bottom:2px solid var(--ink)}
+  tr:last-child td{border-bottom:0}
+  pre{background:var(--ink);color:var(--snow);padding:12px;border-radius:12px;overflow-x:auto;font-size:12px;white-space:pre-wrap}
+  .convo{margin-bottom:16px;display:grid;gap:6px}
+  .bubble{padding:8px 13px;border-radius:16px 16px 16px 4px;background:var(--snow);border:2px solid var(--ink);max-width:80%;font-size:13px}
+  .bubble.me{background:var(--deep);color:var(--snow);margin-left:auto;border-radius:16px 16px 4px 16px}
+  .bubble small{display:block;opacity:.7;font-size:10px;margin-top:2px}
+  dialog{border:2px solid var(--ink);border-radius:20px;padding:0;width:min(440px,92vw);background:var(--card);color:var(--ink);box-shadow:6px 6px 0 var(--ink)}
+  dialog[open]{animation:pop .25s cubic-bezier(.3,1.5,.5,1)}
+  dialog::backdrop{background:rgba(35,54,77,.55)}
+  dialog form{display:grid;gap:12px;padding:20px}
+  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:12px;border:2px solid var(--ink);box-shadow:0 4px 0 var(--ink);color:#fff;display:none;z-index:99;font-weight:700}
+  #toast.show{display:block;animation:pop .28s cubic-bezier(.3,1.6,.5,1)}
+  @keyframes pop{from{opacity:0;transform:translateX(-50%) scale(.8)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+  dialog[open]{animation-name:popd}
+  @keyframes popd{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+  @media (prefers-reduced-motion:reduce){.track{animation:none}*{animation-duration:.01ms!important}}
+
+  /* upgrades */
+  .btn:hover:not(:active){transform:translateY(-1px)}
+  .thumb[onclick],.item h3[onclick]{cursor:pointer}
+  .item h3[onclick]:hover{color:var(--deep);text-decoration:underline;text-decoration-thickness:2px}
+  .grid.fresh>.item{animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+  .grid.fresh>.item:nth-child(2){animation-delay:.05s}.grid.fresh>.item:nth-child(3){animation-delay:.1s}.grid.fresh>.item:nth-child(4){animation-delay:.15s}
+  .grid.fresh>.item:nth-child(5){animation-delay:.2s}.grid.fresh>.item:nth-child(6){animation-delay:.25s}.grid.fresh>.item:nth-child(n+7){animation-delay:.3s}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}}
+  .skel{pointer-events:none}
+  .skel .thumb,.skel .bar{background:linear-gradient(90deg,var(--sand) 25%,#EEF4F6 50%,var(--sand) 75%);background-size:200% 100%;animation:shimmer 1.2s linear infinite}
+  .skel .thumb::before{display:none}.skel .bar{height:13px;border-radius:7px}
+  @keyframes shimmer{to{background-position:-200% 0}}
+  .results{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-4px 2px 12px;font-weight:700;color:var(--mute);font-size:14px}
+  .linkbtn{border:0;background:none;color:var(--deep);font:700 13px var(--body);text-decoration:underline;cursor:pointer}
+  .me-chip{display:flex;align-items:center;gap:10px}
+  .me-chip .av{width:36px;height:36px;font-size:15px}
+  .me-chip b{display:block;font-size:14px;line-height:1.2} .me-chip small{font-size:11px;color:var(--mute);font-weight:600}
+  .pw{position:relative}.pw input{padding-right:62px}
+  .pw button{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:none;font:700 12px var(--body);color:var(--deep);cursor:pointer;padding:4px}
+  .perks{display:flex;flex-wrap:wrap;gap:6px}
+  .perks span{font:700 11px var(--body);background:var(--pink);border:1.5px solid var(--ink);border-radius:99px;padding:2px 10px}
+  .stat:nth-child(5){background:var(--sky);color:var(--ink)}
+  /* listing detail pop-up */
+  dialog.wide{width:min(540px,94vw)}
+  .detail{position:relative;display:grid}
+  .detail .thumb{height:270px;border-bottom:2px solid var(--ink)}
+  .detail .thumb .cutout{width:160px}
+  .dbody{padding:18px 20px 20px;display:grid;gap:10px}
+  .dbody h2{margin:0;font-size:27px;line-height:1.1;color:var(--ink)}
+  .dbody .desc{white-space:pre-wrap}
+  .dbody .price{justify-self:start}
+  .xbtn{position:absolute;right:12px;top:12px;z-index:3;width:36px;height:36px;border-radius:50%;border:2px solid var(--ink);background:var(--card);cursor:pointer;font:800 20px/1 var(--body);color:var(--ink)}
+  .sellerbox{display:flex;align-items:center;gap:12px;border:2px solid var(--ink);border-radius:14px;padding:10px 12px;background:var(--sand)}
+  .sellerbox .av{width:42px;height:42px;font-size:18px;flex:none}
+  .sellerbox b{display:block}
+  @media(max-height:640px){.promo{display:none}}
+  @media(max-width:980px){.sell-wrap{grid-template-columns:1fr}.hero-banner{grid-template-columns:1fr}.hb-art{display:none}}
+  @media(max-width:860px){
+    #auth{grid-template-columns:1fr}.hero{display:none}.brand-m{display:flex}
+    #app{grid-template-columns:1fr}
+    aside{position:sticky;top:0;z-index:40;height:auto;padding:8px 14px;flex-direction:row;align-items:center;justify-content:space-between;border-right:0;border-bottom:2px solid var(--ink)}
+    aside::after,aside .tagline,.promo,.me-chip small,.me-chip b{display:none}
+    aside .logo{font-size:22px} aside .logo img{height:44px}
+    nav{position:fixed;left:0;right:0;bottom:0;z-index:50;flex-direction:row;gap:2px;margin:0;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:var(--card);border-top:2px solid var(--ink);overflow-x:auto}
+    nav button{flex-direction:column;gap:2px;min-width:68px;padding:6px 8px;font-size:11px;text-align:center;white-space:nowrap;border-radius:10px}
+    nav button.active{box-shadow:none;background:var(--sky)}
+    .who{border:0;padding:0;display:flex;align-items:center;gap:8px}
+    main{padding:18px 14px 92px}
+    .hero-banner::before{width:170px;height:170px;right:-80px;top:-90px}
+    .hero-banner{padding:22px 20px}
+  }
+</style>
+</head>
+<body>
+
+<div id="auth" class="hide">
+  <section class="hero">
+    <div class="logo" data-logo>UniOlx</div>
+    <div>
+      <div class="note">psst... campus only</div>
+      <h1><span>Snag it.</span><span>Flip it.</span><span>Repeat.</span></h1>
+      <p>The campus-only marketplace for pre-loved books, gadgets and hostel gear. Student prices, zero cap.</p>
+    </div>
+    <div class="collage" id="collage" aria-hidden="true"></div>
+    <div class="strip" aria-hidden="true"><div class="track"><span>Snag it</span><span>✦</span><span>Flip it</span><span>✦</span><span>Repeat</span><span>✦</span><span>Snag it</span><span>✦</span><span>Flip it</span><span>✦</span><span>Repeat</span><span>✦</span><span>Snag it</span><span>✦</span><span>Flip it</span><span>✦</span><span>Repeat</span><span>✦</span><span>Snag it</span><span>✦</span><span>Flip it</span><span>✦</span><span>Repeat</span><span>✦</span><span>Snag it</span><span>✦</span><span>Flip it</span><span>✦</span><span>Repeat</span><span>✦</span><span>Snag it</span><span>✦</span><span>Flip it</span><span>✦</span><span>Repeat</span><span>✦</span></div></div>
+  </section>
+  <section class="auth-side">
+    <div class="auth-card">
+      <div class="brand-m" data-logo>UniOlx</div>
+      <h2>Welcome back</h2>
+      <div class="muted" style="font-size:14px">Your campus deals are waiting.</div>
+      <div class="seg"><button class="on" id="tLogin">Log in</button><button id="tSignup">Sign up</button></div>
+      <form id="loginForm">
+        <label>Email<input name="email" type="email" required autocomplete="username"></label>
+        <label>Password<input name="password" type="password" required autocomplete="current-password"></label>
+        <button class="btn" style="justify-content:center;padding:10px">Log in</button>
+        <div class="signup-prompt">Don't have an account? <button type="button" id="createAccountLink">Create one</button></div>
+        <!-- <div class="muted">Demo: <code>dev@campus.edu</code> (admin) or <code>yash@campus.edu</code>, password <code>password123</code></div> -->
+      </form>
+      <form id="signupForm" class="hide">
+        <label>Full name<input name="name" required></label>
+        <label>College email<input name="email" type="email" required autocomplete="username"></label>
+        <label>Roll number<input name="roll_no" required></label>
+        <label>Phone (optional)<input name="phone"></label>
+        <label>Hostel or block (optional)<input name="hostel"></label>
+        <label>Password (at least 8 characters)<input name="password" type="password" minlength="8" required autocomplete="new-password"></label>
+        <button class="btn" style="justify-content:center;padding:10px">Create account</button>
+      </form>
+      <div id="authErr" role="alert"></div>
+      <!-- <div class="perks"><span>Students only</span><span>Zero fees</span><span>Meet on campus</span></div> -->
+    </div>
+  </section>
+</div>
+
+<div id="app" class="hide">
+  <aside>
+    <div class="logo" data-logo>UniOlx</div>
+    <div class="tagline">Snag it. Flip it. Repeat.</div>
+    <nav id="nav">
+      <button data-tab="market" class="active">Marketplace</button>
+      <button data-tab="sell">Sell an item</button>
+      <button data-tab="mine">My listings</button>
+      <button data-tab="wish">Wishlist</button>
+      <button data-tab="msgs">Messages</button>
+      <button data-tab="txns">Orders</button>
+      <button data-tab="profile">Profile</button>
+      <button data-tab="reports" id="reportsTab" class="hide">Reports</button>
+      <button data-tab="admin" id="adminTab" class="hide">Admin</button>
+    </nav>
+    <div class="promo"><b>Got stuff to sell?</b><span>Clear out your hostel room and get paid.</span><button class="btn alt" id="promoBtn" style="justify-content:center">List an item</button></div>
+    <div class="who"><span id="whoami" class="me-chip"></span><button class="btn light" id="logout">Log out</button></div>
+  </aside>
+  <main>
+    <section id="market">
+      <div class="hero-banner">
+        <div class="hb-text">
+          <div class="note">fresh drops from your campus</div>
+          <h2 id="greet">What are you hunting for?</h2>
+          <div class="searchbar">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+            <input id="q" placeholder="Try calculator, hoodie, cycle..." aria-label="Search items">
+          </div>
+        </div>
+        <div class="hb-art" id="heroArt" aria-hidden="true"></div>
+      </div>
+      <div class="ticker" id="tickerWrap" aria-hidden="true"><div class="track" id="ticker"></div></div>
+      <div class="chips" id="chips"></div>
+      <div class="stats" id="stats"></div>
+      <div class="filters">
+        <select id="cat" class="hide" aria-label="Category"><option value="">All categories</option></select>
+        <input id="maxp" type="number" placeholder="Max price (₹)" min="0" aria-label="Maximum price">
+        <select id="sort" aria-label="Sort"><option value="newest">Newest first</option><option value="price_asc">Price: low to high</option><option value="price_desc">Price: high to low</option></select>
+      </div>
+      <div class="results"><span id="resCount"></span><button class="linkbtn hide" id="clearF">Clear filters</button></div>
+      <div class="grid" id="items"></div>
+    </section>
+    <section id="sell" class="hide">
+      <div class="page-head"><h2>Sell an item</h2><p>Clean out your room, make some cash.</p></div>
+      <div class="sell-wrap">
+        <form class="card" id="sellForm">
+          <label>Title<input name="title" required maxlength="150" placeholder="e.g. Casio fx-991EX calculator"></label>
+          <label>Description<textarea name="description" rows="3" placeholder="Condition, edition, why you're selling..."></textarea></label>
+          <label>Category<select name="category_id" id="sellCat" required></select></label>
+          <label>Price (₹)<input name="price" type="number" min="0" step="1" required></label>
+          <label>Condition<select name="condition"><option>New</option><option>Like New</option><option selected>Good</option><option>Fair</option></select></label>
+          <label>Photo (optional, JPG/PNG/WEBP/GIF up to 3 MB)<input name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+          <button class="btn" style="justify-content:center;padding:10px">List item</button>
+        </form>
+        <div><div class="preview-label">live preview</div><div id="sellPreview"></div></div>
+      </div>
+    </section>
+    <section id="mine" class="hide"><div class="page-head"><h2>My listings</h2><p>Edit prices or take listings down.</p></div><div class="grid" id="myItems"></div></section>
+    <section id="wish" class="hide"><div class="page-head"><h2>Wishlist</h2><p>Stuff you're eyeing.</p></div><div class="grid" id="wishItems"></div></section>
+    <section id="msgs" class="hide"><div class="page-head"><h2>Messages</h2><p>Chats with buyers and sellers.</p></div><div id="convos"></div></section>
+    <section id="txns" class="hide"><div class="page-head"><h2>Orders</h2><p>Your purchases and sales.</p></div><div class="scroll" id="txnTable"></div></section>
+    <section id="profile" class="hide">
+      <div class="page-head"><h2>Profile</h2><p>Your details and password.</p></div>
+      <div class="profile-hero" id="profileHero"></div>
+      <div class="stats mini" id="myStats"></div>
+      <div style="display:grid;gap:18px;max-width:520px">
+        <form class="card" id="profileForm">
+          <h3>Your details</h3>
+          <label>Name<input name="name" required></label>
+          <label>Phone<input name="phone"></label>
+          <label>Hostel or block<input name="hostel"></label>
+          <button class="btn" style="justify-content:center">Save profile</button>
+        </form>
+        <form class="card" id="pwForm">
+          <h3>Change password</h3>
+          <label>Current password<input name="current" type="password" required autocomplete="current-password"></label>
+          <label>New password (at least 8 characters)<input name="next" type="password" minlength="8" required autocomplete="new-password"></label>
+          <button class="btn" style="justify-content:center">Update password</button>
+        </form>
+      </div>
+    </section>
+    <section id="reports" class="hide">
+      <div class="page-head"><h2>Reports</h2><p>Marketplace insights for admins.</p></div>
+      <div class="filters"><select id="reportSel" aria-label="Report"></select></div>
+      <h3 id="repTitle"></h3>
+      <div class="scroll" id="repTable"></div>
+    </section>
+    <section id="admin" class="hide">
+      <div class="page-head"><h2>Admin</h2><p>Manage users and listings.</p></div>
+      <h3>Users</h3><div class="scroll" id="adminUsers" style="margin-bottom:26px"></div>
+      <h3>Available listings</h3><div class="grid" id="adminItems"></div>
+    </section>
+  </main>
+</div>
+
+<dialog id="dlg"></dialog>
+<dialog id="dlg2" class="wide"></dialog>
+<div id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+let ME = null, CATS = [], wishIds = new Set(), cache = {}, previewUrl = null;
+
+/* ---------- art: sticker cutouts (palette colours only) ---------- */
+const SVG = {
+  Books:`<svg viewBox="0 0 100 100"><rect x="22" y="12" width="56" height="76" rx="7" fill="#3E6591"/><rect x="30" y="12" width="48" height="76" rx="7" fill="#FC6B64"/><rect x="39" y="26" width="30" height="7" rx="3.5" fill="#EEF1E8"/><rect x="39" y="39" width="21" height="5" rx="2.5" fill="#EEF1E8" opacity=".7"/><rect x="22" y="78" width="56" height="10" rx="5" fill="#EEF1E8"/></svg>`,
+  Electronics:`<svg viewBox="0 0 100 100"><rect x="20" y="22" width="60" height="42" rx="6" fill="#23364D"/><rect x="25" y="27" width="50" height="32" rx="3" fill="#EEF1E8"/><circle cx="50" cy="43" r="7" fill="#FC6B64"/><path d="M10 70h80l-7 12H17z" fill="#7BA0CB"/></svg>`,
+  Furniture:`<svg viewBox="0 0 100 100"><rect x="30" y="12" width="40" height="36" rx="9" fill="#FC6B64"/><rect x="25" y="46" width="50" height="13" rx="6" fill="#3E6591"/><rect x="31" y="58" width="7" height="30" rx="3" fill="#7BA0CB"/><rect x="62" y="58" width="7" height="30" rx="3" fill="#7BA0CB"/></svg>`,
+  Stationery:`<svg viewBox="0 0 100 100"><g transform="rotate(38 50 50)"><rect x="41" y="8" width="18" height="64" rx="4" fill="#FC6B64"/><rect x="41" y="8" width="18" height="12" rx="4" fill="#AFC8D4"/><path d="M41 72h18l-9 20z" fill="#EEF1E8"/><path d="M46.5 84h7L50 92z" fill="#23364D"/></g></svg>`,
+  'Cycles & Vehicles':`<svg viewBox="0 0 100 100"><circle cx="24" cy="66" r="16" fill="none" stroke="#23364D" stroke-width="6"/><circle cx="76" cy="66" r="16" fill="none" stroke="#23364D" stroke-width="6"/><path d="M24 66l17-28h27l8 28M41 38l15 28H24M60 30h12" fill="none" stroke="#FC6B64" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  Clothing:`<svg viewBox="0 0 100 100"><path d="M34 14L10 30l9 17 11-6v47h40V41l11 6 9-17-24-16c-3 9-9 13-16 13s-13-4-16-13z" fill="#FC6B64"/><path d="M41 14c2 9 16 9 18 0" fill="none" stroke="#3E6591" stroke-width="4"/><rect x="39" y="64" width="22" height="13" rx="5" fill="#3E6591"/></svg>`,
+  Default:`<svg viewBox="0 0 100 100"><path d="M82 52L52 82a8 8 0 0 1-11 0L14 55V16h39l29 29a8 8 0 0 1 0 7z" fill="#FC6B64"/><circle cx="34" cy="36" r="7" fill="#EEF1E8"/></svg>`
+};
+const catIcon = n => SVG[n] || SVG.Default;
+const LOGO = '<img src="/uniolx-logo.png" alt="UniOlx logo">';
+const NAV = {
+  market:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  sell:'<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
+  mine:'<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/>',
+  wish:'<path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/>',
+  msgs:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+  txns:'<path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/>',
+  profile:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  reports:'<path d="M5 20V10M12 20V4M19 20v-7"/>',
+  admin:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+  heart:'<path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/>',
+  chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>'
+};
+const ni = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${NAV[k]}</svg>`;
+
+function paintArt(){
+  document.querySelectorAll('[data-logo]').forEach(el => { if (!el.firstElementChild) el.innerHTML = LOGO + '<span>UniOlx</span>'; });
+  $('#collage').innerHTML = `
+    <div class="cut" style="left:0;top:34px;width:132px;transform:rotate(-8deg)">${SVG.Electronics}</div>
+    <div class="cut" style="left:128px;top:0;width:150px;transform:rotate(6deg)">${SVG.Clothing}</div>
+    <div class="cut" style="left:282px;top:46px;width:112px;transform:rotate(-5deg)">${SVG.Books}</div>
+    <div class="cut" style="left:70px;top:132px;width:150px;transform:rotate(3deg)">${SVG['Cycles & Vehicles']}</div>
+    <div class="ptag" style="left:236px;top:150px;transform:rotate(-3deg)">Casio fx-991EX <span>₹700</span></div>
+    <div class="ptag" style="left:262px;top:196px;transform:rotate(2deg)">Study table <span>₹900</span></div>
+    <div class="burst" style="right:12px;top:-6px;width:104px;height:104px;transform:rotate(12deg)">zero<br>cap</div>`;
+  $('#heroArt').innerHTML = `
+    <div class="cut" style="right:150px;top:22px;width:104px;transform:rotate(-8deg)">${SVG.Books}</div>
+    <div class="cut" style="right:44px;top:0;width:122px;transform:rotate(7deg)">${SVG.Electronics}</div>
+    <div class="cut" style="right:96px;top:84px;width:110px;transform:rotate(-3deg)">${SVG.Clothing}</div>
+    <div class="burst" style="right:-6px;top:78px;width:84px;height:84px;transform:rotate(14deg);font-size:18px">100%<br>students</div>`;
+  document.querySelectorAll('#nav button').forEach(b => { if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = ni(b.dataset.tab) + '<span>' + b.textContent + '</span>'; } });
+}
+
+/* ---------- helpers ---------- */
+const api = async (url, opts = {}) => {
+  const r = await fetch(url, { method: opts.method || 'GET', credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' }, body: opts.body ? JSON.stringify(opts.body) : undefined });
+  let d = {}; try { d = await r.json(); } catch {}
+  if (r.status === 401 && ME && !url.startsWith('/api/auth/')) { ME = null; showAuth(); throw new Error('Session expired, please log in again'); }
+  if (!r.ok) throw new Error(d.error || 'Request failed');
+  return d;
+};
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(msg, ok = true){ const t=$('#toast'); t.textContent=msg; t.style.background=ok?'#3E6591':'#B5342D'; t.className=''; void t.offsetWidth; t.className='show'; clearTimeout(toast.t); toast.t=setTimeout(()=>t.className='',2800); }
+const inr = n => '₹' + Number(n).toLocaleString('en-IN');
+const run = fn => async (...a) => { try { await fn(...a); } catch (e) { toast(e.message, false); } };
+function setWho(){ $('#whoami').innerHTML = `<span class="av a0">${esc(ME.name[0])}</span><span><b>${esc(ME.name)}</b><small>${ME.role==='admin'?'Admin':'Student'}</small></span>`; }
+const skel = (n = 6) => Array.from({length:n}, () => '<div class="item skel"><div class="thumb"></div><div class="body"><div class="bar" style="width:40%"></div><div class="bar" style="width:85%"></div><div class="bar" style="width:30%"></div></div></div>').join('');
+const pending = sel => { const g = $(sel); if (!g.children.length) g.innerHTML = skel(); };
+function timeAgo(ts){ const d = (Date.now() - new Date(String(ts).replace(' ','T')).getTime()) / 864e5; return d < 1 ? 'today' : d < 2 ? 'yesterday' : Math.floor(d) + ' days ago'; }
+const empty = m => `<div class="empty"><div class="cutout">${SVG.Default}</div>${m}</div>`;
+
+function table(rows){
+  if(!rows.length) return empty('No rows.');
+  const cols = Object.keys(rows[0]);
+  return `<table><thead><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${
+    rows.map(r=>`<tr>${cols.map(c=>`<td>${esc(r[c])}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+
+async function uploadPhoto(file){
+  if (file.size > 3 * 1024 * 1024) throw new Error('Image must be 3 MB or smaller');
+  const fd = new FormData(); fd.append('photo', file);
+  const r = await fetch('/api/upload', { method:'POST', body:fd, credentials:'same-origin' });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || 'Upload failed');
+  return d.url;
+}
+
+/* ----- modal form helper: returns form data, or null if cancelled ----- */
+const fld = (label, input) => `<label>${label}${input}</label>`;
+function ask(title, fields, okText = 'Submit'){
+  return new Promise(resolve => {
+    const d = $('#dlg'); let data = null;
+    d.innerHTML = `<form method="dialog"><h3>${title}</h3>${fields}<div class="row"><button class="btn" value="ok">${okText}</button><button class="btn alt" value="cancel" formnovalidate>Cancel</button></div></form>`;
+    d.querySelector('form').onsubmit = e => { if (e.submitter && e.submitter.value === 'ok') data = Object.fromEntries(new FormData(e.target)); };
+    d.onclose = () => resolve(d.returnValue === 'ok' ? data : null);
+    d.returnValue = ''; d.showModal();
+  });
+}
+
+/* ----- auth ----- */
+function showAuth(){ $('#app').classList.add('hide'); $('#auth').classList.remove('hide'); $('#authErr').textContent=''; }
+function authTab(login){
+  $('#loginForm').classList.toggle('hide', !login); $('#signupForm').classList.toggle('hide', login);
+  $('#tLogin').classList.toggle('on', login); $('#tSignup').classList.toggle('on', !login);
+  document.querySelector('.auth-card h2').textContent = login ? 'Welcome back' : 'Join the campus flip';
+  $('#authErr').textContent='';
+}
+$('#tLogin').onclick = () => authTab(true); $('#tSignup').onclick = () => authTab(false);
+$('#createAccountLink').onclick = () => authTab(false);
+for (const [id, url] of [['#loginForm','/api/auth/login'],['#signupForm','/api/auth/signup']]) {
+  $(id).addEventListener('submit', async e => {
+    e.preventDefault();
+    try { const d = await api(url, { method:'POST', body:Object.fromEntries(new FormData(e.target)) }); e.target.reset(); await boot(d.user); }
+    catch (err) { $('#authErr').textContent = err.message; }
+  });
+}
+$('#logout').onclick = async () => { try { await api('/api/auth/logout', { method:'POST' }); } catch {} ME = null; showAuth(); authTab(true); };
+$('#promoBtn').onclick = () => show('sell');
+
+function buildChips(){
+  const cur = $('#cat').value;
+  $('#chips').innerHTML = [{category_id:'',name:'All'}, ...CATS].map(c =>
+    `<button class="chip ${String(c.category_id)===cur?'on':''}" data-cat="${c.category_id}"><span class="ci">${c.name==='All'?ni('market'):catIcon(c.name)}</span>${esc(c.name)}</button>`).join('');
+}
+$('#chips').addEventListener('click', e => { const b = e.target.closest('.chip'); if (!b) return; $('#cat').value = b.dataset.cat; buildChips(); loadMarket(); });
+
+async function boot(user){
+  ME = user || (await api('/api/auth/me')).user;
+  setWho();
+  const hr = new Date().getHours(), hi = hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
+  $('#greet').textContent = `${hi}, ${ME.name.split(' ')[0]}. What are you hunting for?`;
+  $('#adminTab').classList.toggle('hide', ME.role !== 'admin');
+  if (!CATS.length) {
+    CATS = await api('/api/categories');
+    const opts = CATS.map(c=>`<option value="${c.category_id}">${esc(c.name)}</option>`).join('');
+    $('#cat').innerHTML = '<option value="">All categories</option>' + opts; $('#sellCat').innerHTML = opts;
+  }
+  const isAdmin = ME.role === 'admin';
+  $('#reportsTab').classList.toggle('hide', !isAdmin);
+  if (isAdmin && !$('#reportSel').options.length) {
+    const reps = await api('/api/reports');
+    $('#reportSel').innerHTML = reps.map(r=>`<option value="${r.key}">${esc(r.title)}</option>`).join('');
+  }
+  buildChips();
+  await refreshWish();
+  $('#auth').classList.add('hide'); $('#app').classList.remove('hide');
+  show('market');
+}
+async function refreshWish(){ wishIds = new Set((await api('/api/wishlist')).map(i=>i.item_id)); }
+
+/* ----- item cards ----- */
+function itemCard(i, mode){
+  if (mode !== 'preview') cache[i.item_id] = i;
+  const mine = i.seller_id === ME.user_id, avail = i.status === 'Available';
+  let actions = '', heart = '';
+  if (avail) {
+    if (mode === 'preview') actions = '';
+    else if (mode === 'admin') actions = `<button class="btn danger" onclick="adminRemove(${i.item_id})">Remove</button>`;
+    else if (mode === 'mine') actions = `<button class="btn alt" onclick="editItem(${i.item_id})">Edit</button><button class="btn danger" onclick="removeItem(${i.item_id})">Remove</button>`;
+    else if (!mine) {
+      actions = `<button class="btn" onclick="buy(${i.item_id})">Buy now</button><button class="btn alt" onclick="msgSeller(${i.item_id})">${ni('chat')}Chat</button>`;
+      const on = wishIds.has(i.item_id);
+      heart = `<button class="heart ${on?'on':''}" onclick="event.stopPropagation();toggleWish(${i.item_id})" aria-label="${on?'Remove from wishlist':'Add to wishlist'}">${ni('heart')}</button>`;
+    } else actions = '<span class="muted">Your listing</span>';
+  }
+  const age = i.listed_at ? Date.now() - new Date(String(i.listed_at).replace(' ', 'T')).getTime() : 0;
+  const sticker = !avail ? `<span class="sticker sold">${esc(i.status)}</span>` : (!i.listed_at || age < 3*864e5) ? '<span class="sticker">NEW</span>' : i.price <= 300 ? '<span class="sticker">STEAL</span>' : '';
+  const img = i.image_url ? `<img src="${esc(i.image_url)}" alt="" loading="lazy" onerror="this.remove()">` : '';
+  const open = mode === 'preview' ? '' : ` onclick="openItem(${i.item_id})"`;
+  return `<div class="item"><div class="thumb t${(i.category_id||0)%4}"${open}><span class="cutout">${catIcon(i.category)}</span>${img}${sticker}${heart}</div>
+    <div class="body"><div><span class="tag">${esc(i.category)}</span><span class="tag">${esc(i.condition)}</span></div>
+    <h3${open}>${esc(i.title)}</h3><div class="muted">${esc(i.description||'')}</div>
+    <div class="price">${inr(i.price)}</div>
+    <div class="seller"><span class="av a${Math.abs(i.seller_id||0)%4}">${esc((i.seller||'?')[0])}</span>${esc(i.seller)}${i.hostel?' · '+esc(i.hostel):''}</div>
+    <div class="row">${actions}</div></div></div>`;
+}
+
+/* ----- tab loaders ----- */
+async function loadMarket(){
+  pending('#items');
+  const p = new URLSearchParams({ sort: $('#sort').value });
+  if($('#q').value) p.set('q',$('#q').value); if($('#cat').value) p.set('category',$('#cat').value); if($('#maxp').value) p.set('maxPrice',$('#maxp').value);
+  const [items, s] = await Promise.all([api('/api/items?'+p), api('/api/stats')]);
+  $('#stats').innerHTML = [['Students on board',s.users],['Items up for grabs',s.available_items],['Deals done',s.transactions],['Total volume',inr(s.total_volume)]]
+    .map(([k,v])=>`<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
+  const t = items.slice(0,10).map(i=>`<span>${esc(i.title)} · ${inr(i.price)}</span><span>✦</span>`).join('');
+  $('#ticker').innerHTML = t + t; $('#tickerWrap').classList.toggle('hide', !items.length);
+  $('#items').innerHTML = items.length ? items.map(i=>itemCard(i)).join('') : empty('Nothing matches that search. Try another keyword or category.');
+  const q = $('#q').value;
+  $('#resCount').textContent = `${items.length} ${items.length === 1 ? 'item' : 'items'}${q ? ` for “${q}”` : ''}`;
+  $('#clearF').classList.toggle('hide', !(q || $('#cat').value || $('#maxp').value));
+}
+async function loadMine(){
+  pending('#myItems');
+  const items = await api(`/api/items?seller=${ME.user_id}&status=All`);
+  $('#myItems').innerHTML = items.length ? items.map(i=>itemCard(i,'mine')).join('') : empty('You have not listed anything yet. Your old textbooks are worth money.');
+}
+async function loadWish(){
+  pending('#wishItems');
+  const items = await api('/api/wishlist');
+  $('#wishItems').innerHTML = items.length ? items.map(i=>itemCard(i)).join('') : empty('Your wishlist is empty. Tap the heart on anything you like.');
+}
+async function loadMsgs(){
+  const msgs = await api('/api/messages'), g = {};
+  msgs.forEach(m => {
+    const mineSent = m.sender_id === ME.user_id, other = mineSent ? m.receiver_id : m.sender_id, k = m.item_id + '-' + other;
+    (g[k] ??= { item_id:m.item_id, title:m.title, other, name: mineSent ? m.receiver : m.sender, msgs:[] }).msgs.push(m);
+  });
+  const convos = Object.values(g).sort((a,b)=>b.msgs.at(-1).message_id - a.msgs.at(-1).message_id);
+  $('#convos').innerHTML = convos.length ? convos.map(c=>`<div class="card convo"><b>${esc(c.title)}</b><span class="muted">Chat with ${esc(c.name)}</span>
+    ${c.msgs.map(m=>`<div class="bubble ${m.sender_id===ME.user_id?'me':''}">${esc(m.body)}<small>${esc(m.created_at)}</small></div>`).join('')}
+    <div><button class="btn alt" onclick="reply(${c.item_id},${c.other})">Reply</button></div></div>`).join('')
+    : empty('No chats yet. Hit Chat on a listing to message the seller.');
+}
+async function loadTxns(){
+  const rows = await api('/api/transactions');
+  if (!rows.length) { $('#txnTable').innerHTML = empty('No orders yet. Your first deal is out there.'); return; }
+  $('#txnTable').innerHTML = `<table><thead><tr><th>ID</th><th>Date</th><th>Item</th><th>You were</th><th>Other party</th><th>Paid</th><th>Mode</th><th>Rating</th></tr></thead><tbody>${
+    rows.map(r=>{
+      const bought = r.buyer_id === ME.user_id, sold = r.seller_id === ME.user_id;
+      const rating = r.rating ? '★'.repeat(r.rating) + (r.comment ? ' ' + esc(r.comment) : '')
+        : bought ? `<button class="btn alt" onclick="review(${r.txn_id})">Leave review</button>` : '—';
+      return `<tr><td>${r.txn_id}</td><td>${esc(r.txn_date)}</td><td>${esc(r.title)}</td><td>${bought?'Buyer':sold?'Seller':'—'}</td>
+        <td>${esc(bought ? r.seller : sold ? r.buyer : r.seller + ' → ' + r.buyer)}</td><td>${inr(r.price_paid)}</td><td>${esc(r.payment_mode)}</td><td>${rating}</td></tr>`;
+    }).join('')}</tbody></table>`;
+}
+async function loadProfile(){
+  $('#profileHero').innerHTML = `<div class="blobav">${esc(ME.name[0])}</div><div><b>${esc(ME.name)}</b><span>${esc(ME.email)} · Roll no. ${esc(ME.roll_no)}</span><br><span class="pill">${ME.role==='admin'?'ADMIN':'STUDENT'}</span></div>`;
+  const f = $('#profileForm'); f.name.value = ME.name; f.phone.value = ME.phone || ''; f.hostel.value = ME.hostel || '';
+  try {
+    const st = await api('/api/me/stats');
+    $('#myStats').innerHTML = [['Listed', st.items_listed], ['Sold', st.items_sold], ['Earned', inr(st.revenue)], ['Avg rating', st.avg_rating ? '★ ' + st.avg_rating : '-'], ['Bought', st.purchases]]
+      .map(([k, v]) => `<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
+  } catch {}
+}
+async function loadReport(){
+  const r = await api('/api/reports/'+$('#reportSel').value);
+  $('#repTitle').textContent = r.title; $('#repTable').innerHTML = table(r.rows);
+}
+async function loadAdmin(){
+  const [users, items] = await Promise.all([api('/api/admin/users'), api('/api/items')]);
+  $('#adminUsers').innerHTML = table(users);
+  $('#adminItems').innerHTML = items.length ? items.map(i=>itemCard(i,'admin')).join('') : empty('No listings.');
+}
+
+/* ----- sell form live preview ----- */
+function renderPreview(){
+  const f = $('#sellForm'), file = f.photo.files[0];
+  if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
+  if (file) previewUrl = URL.createObjectURL(file);
+  const catId = Number(f.category_id.value) || 0, cat = CATS.find(c => c.category_id === catId);
+  $('#sellPreview').innerHTML = itemCard({ item_id:0, title:f.title.value || 'Your item title', description:f.description.value || 'Your description shows up here.',
+    price:Number(f.price.value) || 0, condition:f.condition.value, status:'Available', category:cat ? cat.name : 'Books', category_id:catId,
+    seller_id:-1, seller:ME.name, hostel:ME.hostel, image_url:previewUrl }, 'preview');
+}
+$('#sellForm').addEventListener('input', renderPreview);
+
+/* ----- actions ----- */
+const buy = run(async id => {
+  const i = cache[id];
+  const f = await ask(`Buy "${esc(i.title)}"`, `<div class="price">${inr(i.price)}</div>` + fld('Payment mode','<select name="payment_mode"><option>UPI</option><option>Cash</option><option>Card</option></select>'), 'Confirm purchase');
+  if (!f) return;
+  await api('/api/transactions', { method:'POST', body:{ item_id:id, payment_mode:f.payment_mode } });
+  toast('Purchase successful! Go meet your seller.'); await refreshWish(); loadMarket();
+});
+const toggleWish = run(async id => {
+  if (wishIds.has(id)) { await api('/api/wishlist/'+id, { method:'DELETE' }); wishIds.delete(id); toast('Removed from wishlist'); }
+  else { await api('/api/wishlist', { method:'POST', body:{ item_id:id } }); wishIds.add(id); toast('Saved to your wishlist'); }
+  show(document.querySelector('nav .active').dataset.tab);
+});
+const removeItem = run(async id => { if(!confirm('Remove this listing?')) return; await api('/api/items/'+id,{method:'DELETE'}); toast('Listing removed'); loadMine(); });
+const adminRemove = run(async id => { if(!confirm('Remove this listing as admin?')) return; await api('/api/items/'+id,{method:'DELETE'}); toast('Listing removed'); loadAdmin(); });
+const editItem = run(async id => {
+  const i = cache[id];
+  const f = await ask('Edit listing',
+    fld('Title',`<input name="title" required value="${esc(i.title)}">`) +
+    fld('Description',`<textarea name="description" rows="3">${esc(i.description||'')}</textarea>`) +
+    fld('Category',`<select name="category_id">${CATS.map(c=>`<option value="${c.category_id}" ${c.category_id===i.category_id?'selected':''}>${esc(c.name)}</option>`).join('')}</select>`) +
+    fld('Price (₹)',`<input name="price" type="number" min="0" required value="${i.price}">`) +
+    fld('Condition',`<select name="condition">${['New','Like New','Good','Fair'].map(c=>`<option ${c===i.condition?'selected':''}>${c}</option>`).join('')}</select>`) +
+    fld('Replace photo (optional)','<input name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif">') +
+    (i.image_url ? '<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="remove_photo" style="width:auto"> Remove current photo</label>' : ''), 'Save changes');
+  if (!f) return;
+  f.price = Number(f.price); f.category_id = Number(f.category_id);
+  const photo = f.photo, removePhoto = f.remove_photo; delete f.photo; delete f.remove_photo;
+  if (photo && photo.size) f.image_url = await uploadPhoto(photo); else if (removePhoto) f.image_url = null;
+  await api('/api/items/'+id, { method:'PUT', body:f }); toast('Listing updated'); loadMine();
+});
+const closeDetail = () => $('#dlg2').close();
+const openItem = run(async id => {
+  const i = await api('/api/items/' + id); cache[id] = { ...cache[id], ...i };
+  const mine = i.seller_id === ME.user_id, avail = i.status === 'Available', on = wishIds.has(id);
+  const img = i.image_url ? `<img src="${esc(i.image_url)}" alt="" onerror="this.remove()">` : '';
+  const acts = !avail ? `<span class="tag" style="background:var(--deep);color:var(--snow)">${esc(i.status)}</span>`
+    : mine ? '<span class="muted">This is your listing</span>'
+    : `<button class="btn" onclick="closeDetail();buy(${id})">Buy now</button><button class="btn alt" onclick="closeDetail();msgSeller(${id})">${ni('chat')}Chat with seller</button><button class="btn alt" onclick="closeDetail();toggleWish(${id})">${on ? '♥ Saved' : '♡ Save'}</button>`;
+  $('#dlg2').innerHTML = `<div class="detail"><button class="xbtn" onclick="closeDetail()" aria-label="Close">×</button>
+    <div class="thumb t${(i.category_id||0)%4}"><span class="cutout">${catIcon(i.category)}</span>${img}</div>
+    <div class="dbody"><div><span class="tag">${esc(i.category)}</span><span class="tag">${esc(i.condition)}</span></div>
+    <h2>${esc(i.title)}</h2><div class="price">${inr(i.price)}</div>
+    <div class="desc">${esc(i.description || 'No description added.')}</div>
+    <div class="sellerbox"><span class="av a${Math.abs(i.seller_id)%4}">${esc(i.seller[0])}</span><div><b>${esc(i.seller)}</b>
+      <span class="muted">${esc(i.hostel || 'On campus')}${i.seller_rating ? ' · ★ ' + i.seller_rating : ''} · ${i.seller_sold || 0} sold${i.listed_at ? ' · listed ' + timeAgo(i.listed_at) : ''}</span></div></div>
+    <div class="row">${acts}</div></div></div>`;
+  $('#dlg2').showModal();
+});
+$('#dlg2').addEventListener('click', e => { if (e.target === e.currentTarget) closeDetail(); });
+const msgSeller = run(async id => {
+  const f = await ask(`Message ${esc(cache[id].seller)}`, fld('Message',`<textarea name="body" rows="3" maxlength="500" required placeholder="Hi, is this still available?"></textarea>`), 'Send message');
+  if (!f) return;
+  await api('/api/messages', { method:'POST', body:{ item_id:id, body:f.body } }); toast('Message sent');
+});
+const reply = run(async (item_id, to) => {
+  const f = await ask('Reply', fld('Message','<textarea name="body" rows="3" maxlength="500" required></textarea>'), 'Send reply');
+  if (!f) return;
+  await api('/api/messages', { method:'POST', body:{ item_id, to_user_id:to, body:f.body } }); loadMsgs();
+});
+const review = run(async txn_id => {
+  const f = await ask('Rate this purchase', fld('Rating','<select name="rating"><option value="5">★★★★★ Excellent</option><option value="4">★★★★ Good</option><option value="3">★★★ OK</option><option value="2">★★ Poor</option><option value="1">★ Bad</option></select>') + fld('Comment (optional)','<textarea name="comment" rows="2" maxlength="300"></textarea>'), 'Submit review');
+  if (!f) return;
+  await api('/api/reviews', { method:'POST', body:{ txn_id, rating:Number(f.rating), comment:f.comment } }); toast('Thanks for the review!'); loadTxns();
+});
+
+$('#sellForm').addEventListener('submit', run(async e => {
+  e.preventDefault();
+  const f = Object.fromEntries(new FormData(e.target)); f.price = Number(f.price); f.category_id = Number(f.category_id);
+  const photo = f.photo; delete f.photo;
+  if (photo && photo.size) f.image_url = await uploadPhoto(photo);
+  await api('/api/items', { method:'POST', body:f }); toast('Listed! Now wait for the DMs.'); e.target.reset(); show('market');
+}));
+$('#profileForm').addEventListener('submit', run(async e => {
+  e.preventDefault();
+  ME = (await api('/api/me', { method:'PUT', body:Object.fromEntries(new FormData(e.target)) })).user;
+  setWho(); loadProfile(); toast('Profile saved');
+}));
+$('#pwForm').addEventListener('submit', run(async e => {
+  e.preventDefault();
+  await api('/api/me/password', { method:'PUT', body:Object.fromEntries(new FormData(e.target)) }); e.target.reset(); toast('Password updated');
+}));
+
+const loaders = { market:loadMarket, mine:loadMine, wish:loadWish, msgs:loadMsgs, txns:loadTxns, profile:loadProfile, reports:loadReport, admin:loadAdmin, sell:renderPreview };
+const show = run(async tab => {
+  document.querySelectorAll('main > section').forEach(s=>s.classList.toggle('hide', s.id!==tab));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  window.scrollTo(0, 0);
+  document.querySelectorAll('.grid').forEach(g => g.classList.add('fresh'));
+  await loaders[tab]();
+  setTimeout(() => document.querySelectorAll('.grid').forEach(g => g.classList.remove('fresh')), 800);
+});
+$('#nav').addEventListener('click', e=>{ const b = e.target.closest('button'); if(b && b.dataset.tab) show(b.dataset.tab); });
+let debounce; const later = () => { clearTimeout(debounce); debounce = setTimeout(loadMarket, 250); };
+['#q','#maxp'].forEach(s=>$(s).addEventListener('input', later));
+$('#sort').addEventListener('change', loadMarket);
+$('#reportSel').addEventListener('change', loadReport);
+
+$('#clearF').onclick = () => { $('#q').value = ''; $('#cat').value = ''; $('#maxp').value = ''; $('#sort').value = 'newest'; buildChips(); loadMarket(); };
+document.querySelectorAll('#loginForm input[type=password], #signupForm input[type=password], #pwForm input[type=password]').forEach(inp => {
+  const w = document.createElement('div'); w.className = 'pw'; inp.replaceWith(w); w.append(inp);
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Show'; b.setAttribute('aria-label', 'Show or hide password');
+  b.onclick = () => { const show = inp.type === 'password'; inp.type = show ? 'text' : 'password'; b.textContent = show ? 'Hide' : 'Show'; };
+  w.append(b);
+});
+paintArt();
+boot().catch(() => { showAuth(); authTab(true); });
+</script>
+</body>
+</html>

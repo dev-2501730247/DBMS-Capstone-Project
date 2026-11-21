@@ -1,0 +1,17 @@
+{
+  "name": "uniolx",
+  "version": "2.0.0",
+  "description": "UniOlx - students sign up, list, buy, sell and chat about used items",
+  "main": "server.js",
+  "scripts": {
+    "setup": "node db/setup.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "mysql2": "^3.11.0"
+  }
+}

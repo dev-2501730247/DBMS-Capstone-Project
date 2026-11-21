@@ -13,5 +13,6 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "mysql2": "^3.11.0"
+    "cloudinary": "^2.11.0"
   }
 }

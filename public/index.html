@@ -438,14 +438,30 @@ function paintArt(){
 }
 
 /* ---------- helpers ---------- */
+
+const API_BASE = 'https://uniolx-campus-marketplace.onrender.com';
+
 const api = async (url, opts = {}) => {
-  const r = await fetch(url, { method: opts.method || 'GET', credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json' }, body: opts.body ? JSON.stringify(opts.body) : undefined });
-  let d = {}; try { d = await r.json(); } catch {}
-  if (r.status === 401 && ME && !url.startsWith('/api/auth/')) { ME = null; showAuth(); throw new Error('Session expired, please log in again'); }
+  const r = await fetch(`${API_BASE}${url}`, {
+    method: opts.method || 'GET',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+
+  let d = {};
+  try { d = await r.json(); } catch {}
+
+  if (r.status === 401 && ME && !url.startsWith('/api/auth/')) {
+    ME = null;
+    showAuth();
+    throw new Error('Session expired, please log in again');
+  }
+
   if (!r.ok) throw new Error(d.error || 'Request failed');
   return d;
 };
+
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(msg, ok = true){ const t=$('#toast'); t.textContent=msg; t.style.background=ok?'#3E6591':'#B5342D'; t.className=''; void t.offsetWidth; t.className='show'; clearTimeout(toast.t); toast.t=setTimeout(()=>t.className='',2800); }
 const inr = n => '₹' + Number(n).toLocaleString('en-IN');

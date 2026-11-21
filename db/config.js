@@ -1,8 +1,13 @@
-// Edit these (or set env vars) to match your MySQL install
+
 module.exports = {
   host: process.env.DB_HOST || 'localhost',
-  port: Number(process.env.DB_PORT) || 3306,
+  port: Number(process.env.DB_PORT) || 4000,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '1234',
-  database: 'campus_marketplace'
+  database: process.env.DB_NAME || 'campus_marketplace',
+
+  // Required for TiDB Cloud secure connections
+  ssl: {
+    minVersion: 'TLSv1.2'
+  }
 };

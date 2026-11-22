@@ -617,7 +617,7 @@ function itemCard(i, mode){
   const sticker = !avail ? `<span class="sticker sold">${esc(i.status)}</span>` : (!i.listed_at || age < 3*864e5) ? '<span class="sticker">NEW</span>' : i.price <= 300 ? '<span class="sticker">STEAL</span>' : '';
   const img = i.image_url ? `<img src="${esc(i.image_url)}" alt="" loading="lazy" onerror="this.remove()">` : '';
   const open = mode === 'preview' ? '' : ` data-id="${i.item_id}"`;
-  return `<div class="item"${open}><div class="thumb t${(i.category_id||0)%4}"> <span class="cutout">${catIcon(i.category)}</span>${img}${sticker}${heart}</div>
+  return `<div class="item"${open}>    <div class="thumb t${(i.category_id||0)%4}" onclick="zoomImage()" title="Click to enlarge"><span class="cutout">${catIcon(i.category)}</span>${img}<span class="zoomhint">Click to enlarge</span></div>"> <span class="cutout">${catIcon(i.category)}</span>${img}${sticker}${heart}</div>
     <div class="body"><div><span class="tag">${esc(i.category)}</span><span class="tag">${esc(i.condition)}</span></div>
     <h3>${esc(i.title)}</h3><div class="muted">${esc(i.description||'')}</div>
     <div class="price">${inr(i.price)}</div>

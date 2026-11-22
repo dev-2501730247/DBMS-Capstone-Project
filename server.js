@@ -222,12 +222,13 @@ app.get('/api/items', h(async (req, res) => {
   const { q: search, category, maxPrice, status = 'Available', seller, sort = 'newest' } = req.query;
   let sql = 'SELECT * FROM v_item_details WHERE 1=1';
   const p = [];
-  if (status !== 'All') { sql += ' AND status = ?'; p.push(status); }
+    if (status === 'Available' && req.query.includeSold === '1') sql += " AND status IN ('Available','Sold')";   // show sold-out items too
+  else if (status !== 'All') { sql += ' AND status = ?'; p.push(status); }
   if (search) { const like = `%${String(search).replace(/[%_\\]/g, '\\$&')}%`; sql += ' AND (title LIKE ? OR description LIKE ?)'; p.push(like, like); }
   if (category) { sql += ' AND category_id = ?'; p.push(category); }
   if (maxPrice) { sql += ' AND price <= ?'; p.push(maxPrice); }
   if (seller)   { sql += ' AND seller_id = ?'; p.push(seller); }
-  res.json(await q(`${sql} ORDER BY ${SORTS[sort] || SORTS.newest}`, p));
+  res.json(await q(`${sql} ORDER BY (status = 'Sold'), ${SORTS[sort] || SORTS.newest}`, p));
 }));
 
 app.get('/api/items/:id', h(async (req, res) => {
@@ -314,6 +315,9 @@ app.post('/api/transactions', h(async (req, res) => {
     if (rows[0].seller_id === req.userId) throw new HttpError(400, 'Seller cannot buy their own item');
     const [r] = await conn.query('INSERT INTO transactions (item_id,buyer_id,price_paid,payment_mode) VALUES (?,?,?,?)',
                                  [item_id, req.userId, rows[0].price, mode]);
+    // Mark the item sold here as well as in the trigger, so a sale always updates the listing
+    await conn.query("UPDATE items SET status = 'Sold' WHERE item_id = ? AND status = 'Available'", [item_id]);
+    await conn.query('DELETE FROM wishlist WHERE item_id = ?', [item_id]);
     await conn.commit();
     res.status(201).json({ txn_id: r.insertId });
   } catch (e) { await conn.rollback(); throw e; }
@@ -450,4 +454,9 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
+pool.query('SHOW TRIGGERS').then(([rows]) => {
+  const have = rows.map(r => r.Trigger);
+  for (const n of ['trg_validate_purchase', 'trg_mark_sold'])
+    if (!have.includes(n)) console.warn(`WARNING: database trigger ${n} is missing. Run "npm run setup" to recreate the database.`);
+}).catch(() => {});
 app.listen(PORT, () => console.log(`UniOlx running at http://localhost:${PORT}`));

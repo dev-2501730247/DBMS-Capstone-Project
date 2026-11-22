@@ -197,8 +197,9 @@
 
   /* upgrades */
   .btn:hover:not(:active){transform:translateY(-1px)}
-  .thumb[onclick],.item h3[onclick]{cursor:pointer}
-  .item h3[onclick]:hover{color:var(--deep);text-decoration:underline;text-decoration-thickness:2px}
+  .item[data-id]{cursor:pointer;transition:transform .12s,box-shadow .12s}
+  .item[data-id]:hover{transform:translateY(-3px);box-shadow:8px 8px 0 var(--ink)}
+  .item[data-id]:hover h3{color:var(--deep);text-decoration:underline;text-decoration-thickness:2px}
   .grid.fresh>.item{animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
   .grid.fresh>.item:nth-child(2){animation-delay:.05s}.grid.fresh>.item:nth-child(3){animation-delay:.1s}.grid.fresh>.item:nth-child(4){animation-delay:.15s}
   .grid.fresh>.item:nth-child(5){animation-delay:.2s}.grid.fresh>.item:nth-child(6){animation-delay:.25s}.grid.fresh>.item:nth-child(n+7){animation-delay:.3s}
@@ -230,6 +231,35 @@
   .sellerbox{display:flex;align-items:center;gap:12px;border:2px solid var(--ink);border-radius:14px;padding:10px 12px;background:var(--sand)}
   .sellerbox .av{width:42px;height:42px;font-size:18px;flex:none}
   .sellerbox b{display:block}
+    .rcpt{position:relative}
+  .rc-head{display:flex;align-items:center;gap:12px;background:var(--sky);border-bottom:2px solid var(--ink);padding:14px 20px;overflow:hidden}
+  .rc-head::after{content:"";position:absolute;right:-30px;top:-50px;width:130px;height:130px;border-radius:50%;background:var(--coral)}
+  .rc-head img{height:54px;width:auto;position:relative;z-index:1}
+  .rc-head b{display:block;font:800 26px var(--display);line-height:1;position:relative;z-index:1}
+  .rc-head span{font:700 17px var(--hand);color:var(--deep);position:relative;z-index:1}
+  .rc-body{padding:18px 22px 6px;display:grid;gap:12px}
+  .rc-top{display:flex;justify-content:space-between;align-items:center}
+  .rc-top small{font:700 10px var(--body);letter-spacing:.18em;color:var(--mute)}
+  .rc-top h3{margin:0;font-size:26px;color:var(--ink)}
+  .rc-paid{border:3px solid var(--coral);color:var(--coral);border-radius:10px;padding:0 12px;font:800 22px/34px var(--display);transform:rotate(-8deg)}
+  .rc-item b{display:block;font:800 19px var(--display);margin-bottom:6px}
+  .rc-rows{display:grid;gap:8px;border-top:2px dashed var(--ink);border-bottom:2px dashed var(--ink);padding:12px 0}
+  .rc-rows div{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+  .rc-rows span{color:var(--mute)} .rc-rows b{text-align:right}
+  .rc-total{display:flex;justify-content:space-between;align-items:center}
+  .rc-total span{font:700 11px var(--body);letter-spacing:.18em;color:var(--mute)}
+  .rc-total b{font:800 34px var(--display);color:var(--deep)}
+  .rc-bars{display:flex;gap:2px;height:26px;justify-content:center;margin-top:4px}
+  .rc-bars i{display:block;background:var(--ink)}
+  .rc-foot{text-align:center;color:var(--mute);font-size:12px}
+  .rc-actions{display:flex;gap:8px;justify-content:center;padding:12px 22px 20px}
+  a.btn{text-decoration:none}
+  .detail .thumb{cursor:zoom-in}
+  .zoomhint{position:absolute;right:12px;bottom:12px;z-index:2;background:var(--card);border:2px solid var(--ink);border-radius:99px;padding:1px 10px;font:700 11px/18px var(--body)}
+  #lightbox{width:100vw;max-width:100vw;height:100vh;max-height:100vh;margin:0;padding:0;border:0;border-radius:0;box-shadow:none;background:rgba(35,54,77,.92);cursor:zoom-out}
+  #lightbox[open]{display:grid;place-items:center}
+  #lightbox img{max-width:92vw;max-height:88vh;object-fit:contain;border:3px solid var(--snow);border-radius:14px;background:var(--card)}
+  #lightbox .zoomart svg{width:min(70vw,420px);filter:var(--outline)}
   @media(max-height:640px){.promo{display:none}}
   @media(max-width:980px){.sell-wrap{grid-template-columns:1fr}.hero-banner{grid-template-columns:1fr}.hb-art{display:none}}
   @media(max-width:860px){
@@ -386,6 +416,7 @@
 
 <dialog id="dlg"></dialog>
 <dialog id="dlg2" class="wide"></dialog>
+<dialog id="lightbox"></dialog>
 <div id="toast"></div>
 
 <script>
@@ -585,10 +616,10 @@ function itemCard(i, mode){
   const age = i.listed_at ? Date.now() - new Date(String(i.listed_at).replace(' ', 'T')).getTime() : 0;
   const sticker = !avail ? `<span class="sticker sold">${esc(i.status)}</span>` : (!i.listed_at || age < 3*864e5) ? '<span class="sticker">NEW</span>' : i.price <= 300 ? '<span class="sticker">STEAL</span>' : '';
   const img = i.image_url ? `<img src="${esc(i.image_url)}" alt="" loading="lazy" onerror="this.remove()">` : '';
-  const open = mode === 'preview' ? '' : ` onclick="openItem(${i.item_id})"`;
-  return `<div class="item"><div class="thumb t${(i.category_id||0)%4}"${open}><span class="cutout">${catIcon(i.category)}</span>${img}${sticker}${heart}</div>
+  const open = mode === 'preview' ? '' : ` data-id="${i.item_id}"`;
+  return `<div class="item"${open}><div class="thumb t${(i.category_id||0)%4}"> <span class="cutout">${catIcon(i.category)}</span>${img}${sticker}${heart}</div>
     <div class="body"><div><span class="tag">${esc(i.category)}</span><span class="tag">${esc(i.condition)}</span></div>
-    <h3${open}>${esc(i.title)}</h3><div class="muted">${esc(i.description||'')}</div>
+    <h3>${esc(i.title)}</h3><div class="muted">${esc(i.description||'')}</div>
     <div class="price">${inr(i.price)}</div>
     <div class="seller"><span class="av a${Math.abs(i.seller_id||0)%4}">${esc((i.seller||'?')[0])}</span>${esc(i.seller)}${i.hostel?' · '+esc(i.hostel):''}</div>
     <div class="row">${actions}</div></div></div>`;
@@ -634,13 +665,13 @@ async function loadMsgs(){
 async function loadTxns(){
   const rows = await api('/api/transactions');
   if (!rows.length) { $('#txnTable').innerHTML = empty('No orders yet. Your first deal is out there.'); return; }
-  $('#txnTable').innerHTML = `<table><thead><tr><th>ID</th><th>Date</th><th>Item</th><th>You were</th><th>Other party</th><th>Paid</th><th>Mode</th><th>Rating</th></tr></thead><tbody>${
+  $('#txnTable').innerHTML = `<table><thead><tr><th>ID</th><th>Date</th><th>Item</th><th>You were</th><th>Other party</th><th>Paid</th><th>Mode</th><th>Rating</th><th>Receipt</th></tr></thead><tbody>${
     rows.map(r=>{
       const bought = r.buyer_id === ME.user_id, sold = r.seller_id === ME.user_id;
       const rating = r.rating ? '★'.repeat(r.rating) + (r.comment ? ' ' + esc(r.comment) : '')
         : bought ? `<button class="btn alt" onclick="review(${r.txn_id})">Leave review</button>` : '—';
       return `<tr><td>${r.txn_id}</td><td>${esc(r.txn_date)}</td><td>${esc(r.title)}</td><td>${bought?'Buyer':sold?'Seller':'—'}</td>
-        <td>${esc(bought ? r.seller : sold ? r.buyer : r.seller + ' → ' + r.buyer)}</td><td>${inr(r.price_paid)}</td><td>${esc(r.payment_mode)}</td><td>${rating}</td></tr>`;
+        <td>${esc(bought ? r.seller : sold ? r.buyer : r.seller + ' → ' + r.buyer)}</td><td>${inr(r.price_paid)}</td><td>${esc(r.payment_mode)}</td><td>${rating}</td><td><button class="btn alt" onclick="openReceipt(${r.txn_id})">Receipt</button></td></tr>`;
     }).join('')}</tbody></table>`;
 }
 async function loadProfile(){
@@ -679,8 +710,8 @@ const buy = run(async id => {
   const i = cache[id];
   const f = await ask(`Buy "${esc(i.title)}"`, `<div class="price">${inr(i.price)}</div>` + fld('Payment mode','<select name="payment_mode"><option>UPI</option><option>Cash</option><option>Card</option></select>'), 'Confirm purchase');
   if (!f) return;
-  await api('/api/transactions', { method:'POST', body:{ item_id:id, payment_mode:f.payment_mode } });
-  toast('Purchase successful! Go meet your seller.'); await refreshWish(); loadMarket();
+    const t = await api('/api/transactions', { method:'POST', body:{ item_id:id, payment_mode:f.payment_mode } });
+  toast('Purchase successful!'); await refreshWish(); loadMarket(); openReceipt(t.txn_id);
 });
 const toggleWish = run(async id => {
   if (wishIds.has(id)) { await api('/api/wishlist/'+id, { method:'DELETE' }); wishIds.delete(id); toast('Removed from wishlist'); }
@@ -705,16 +736,17 @@ const editItem = run(async id => {
   if (photo && photo.size) f.image_url = await uploadPhoto(photo); else if (removePhoto) f.image_url = null;
   await api('/api/items/'+id, { method:'PUT', body:f }); toast('Listing updated'); loadMine();
 });
+let detailItem = null;
 const closeDetail = () => $('#dlg2').close();
 const openItem = run(async id => {
-  const i = await api('/api/items/' + id); cache[id] = { ...cache[id], ...i };
+  const i = await api('/api/items/' + id); cache[id] = { ...cache[id], ...i }; detailItem = i;
   const mine = i.seller_id === ME.user_id, avail = i.status === 'Available', on = wishIds.has(id);
   const img = i.image_url ? `<img src="${esc(i.image_url)}" alt="" onerror="this.remove()">` : '';
   const acts = !avail ? `<span class="tag" style="background:var(--deep);color:var(--snow)">${esc(i.status)}</span>`
     : mine ? '<span class="muted">This is your listing</span>'
     : `<button class="btn" onclick="closeDetail();buy(${id})">Buy now</button><button class="btn alt" onclick="closeDetail();msgSeller(${id})">${ni('chat')}Chat with seller</button><button class="btn alt" onclick="closeDetail();toggleWish(${id})">${on ? '♥ Saved' : '♡ Save'}</button>`;
   $('#dlg2').innerHTML = `<div class="detail"><button class="xbtn" onclick="closeDetail()" aria-label="Close">×</button>
-    <div class="thumb t${(i.category_id||0)%4}"><span class="cutout">${catIcon(i.category)}</span>${img}</div>
+    <div class="thumb t${(i.category_id||0)%4}" onclick="zoomImage()" title="Click to enlarge"><span class="cutout">${catIcon(i.category)}</span>${img}<span class="zoomhint">Click to enlarge</span></div>${catIcon(i.category)}</span>${img}</div>
     <div class="dbody"><div><span class="tag">${esc(i.category)}</span><span class="tag">${esc(i.condition)}</span></div>
     <h2>${esc(i.title)}</h2><div class="price">${inr(i.price)}</div>
     <div class="desc">${esc(i.description || 'No description added.')}</div>
@@ -723,7 +755,40 @@ const openItem = run(async id => {
     <div class="row">${acts}</div></div></div>`;
   $('#dlg2').showModal();
 });
+  function zoomImage(){
+  const i = detailItem; if (!i) return;
+  $('#lightbox').innerHTML = i.image_url ? `<img src="${esc(i.image_url)}" alt="${esc(i.title)}">` : `<div class="zoomart">${catIcon(i.category)}</div>`;
+  $('#lightbox').showModal();
+}
+$('#lightbox').addEventListener('click', () => $('#lightbox').close());
+document.addEventListener('click', e => {                       // click anywhere on a card (except its buttons) to open it
+  const card = e.target.closest('.item[data-id]');
+  if (card && !e.target.closest('button, a, input, select')) openItem(Number(card.dataset.id));
+});
 $('#dlg2').addEventListener('click', e => { if (e.target === e.currentTarget) closeDetail(); });
+  const openReceipt = run(async id => {
+  const r = await api(`/api/transactions/${id}/receipt`);
+  const no = 'UO-' + String(r.txn_id).padStart(6, '0');
+  const when = new Date(String(r.txn_date).replace(' ', 'T')).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+  const bars = Array.from({ length: 40 }, (_, k) => `<i style="width:${1 + ((k * 7 + r.txn_id) % 3)}px"></i>`).join('');
+  $('#dlg2').innerHTML = `<div class="rcpt"><button class="xbtn" onclick="closeDetail()" aria-label="Close">×</button>
+    <div class="rc-head"><img src="/uniolx-logo.png" alt=""><div><b>UniOlx</b><span>Snag it. Flip it. Repeat.</span></div></div>
+    <div class="rc-body">
+      <div class="rc-top"><div><small>PAYMENT RECEIPT</small><h3>${no}</h3></div><span class="rc-paid">PAID</span></div>
+      <div class="rc-item"><b>${esc(r.title)}</b><span class="tag">${esc(r.category)}</span><span class="tag">${esc(r.condition)}</span></div>
+      <div class="rc-rows">
+        <div><span>Date</span><b>${esc(when)}</b></div>
+        <div><span>Sold by</span><b>${esc(r.seller)}${r.seller_hostel ? ' · ' + esc(r.seller_hostel) : ''}</b></div>
+        <div><span>Bought by</span><b>${esc(r.buyer)}${r.buyer_hostel ? ' · ' + esc(r.buyer_hostel) : ''}</b></div>
+        <div><span>Payment mode</span><b>${esc(r.payment_mode)}</b></div>
+      </div>
+      <div class="rc-total"><span>TOTAL PAID</span><b>${inr(r.price_paid)}</b></div>
+      <div class="rc-bars">${bars}</div>
+      <div class="rc-foot">Meet the seller on campus to collect your item.</div>
+    </div>
+    <div class="rc-actions"><a class="btn" href="/api/transactions/${id}/receipt.pdf" download>Download PDF</a><button class="btn alt" onclick="closeDetail()">Close</button></div></div>`;
+  $('#dlg2').showModal();
+});
 const msgSeller = run(async id => {
   const f = await ask(`Message ${esc(cache[id].seller)}`, fld('Message',`<textarea name="body" rows="3" maxlength="500" required placeholder="Hi, is this still available?"></textarea>`), 'Send message');
   if (!f) return;

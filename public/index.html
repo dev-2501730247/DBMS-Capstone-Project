@@ -621,7 +621,7 @@ function itemCard(i, mode){
     <div class="body"><div><span class="tag">${esc(i.category)}</span><span class="tag">${esc(i.condition)}</span></div>
     <h3>${esc(i.title)}</h3><div class="muted">${esc(i.description||'')}</div>
     <div class="price">${inr(i.price)}</div>
-   <div class="seller"><button type="button" class="av a${Math.abs(i.seller_id||0)%4}" style="padding:0;cursor:pointer" onclick="event.stopPropagation();show('profile')" title="Open my profile">${esc((i.seller||'?')[0])}</button>${esc(i.seller)}${i.hostel?' · '+esc(i.hostel):''}</div>
+   <div class="seller"><button type="button" class="av a${Math.abs(i.seller_id||0)%4}" data-open-my-profile title="Open my profile">${esc((i.seller||'?')[0])}</button>${esc(i.seller)}${i.hostel?' · '+esc(i.hostel):''}</div>
     <div class="row">${actions}</div></div></div>`;
 }
 
@@ -840,6 +840,13 @@ const show = run(async tab => {
   setTimeout(() => document.querySelectorAll('.grid').forEach(g => g.classList.remove('fresh')), 800);
 });
 $('#nav').addEventListener('click', e=>{ const b = e.target.closest('button'); if(b && b.dataset.tab) show(b.dataset.tab); });
+  document.addEventListener('click', e => {
+  const avatar = e.target.closest('[data-open-my-profile]');
+  if (!avatar) return;
+  e.preventDefault();
+  e.stopPropagation();
+  show('profile');
+});
 let debounce; const later = () => { clearTimeout(debounce); debounce = setTimeout(loadMarket, 250); };
 ['#q','#maxp'].forEach(s=>$(s).addEventListener('input', later));
 $('#sort').addEventListener('change', loadMarket);

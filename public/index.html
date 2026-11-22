@@ -762,21 +762,15 @@ const openItem = run(async id => {
 }
 $('#lightbox').addEventListener('click', () => $('#lightbox').close());
 document.addEventListener('click', e => {
-  if (e.target.closest('[data-open-my-profile]')) return;
+  const avatar = e.target.closest('#whoami .av');
 
-  const card = e.target.closest('.item[data-id]');
+  if (!avatar) return;
 
-  if (!card || e.target.closest('button, a, input, select')) return;
+  e.preventDefault();
+  e.stopPropagation();
 
-  const id = Number(card.dataset.id);
-  detailItem = cache[id];
-
-  if (detailItem && detailItem.image_url) {
-    zoomImage();
-  } else {
-    toast('No uploaded photo available for this item', false);
-  }
-});
+  show('profile');
+}, true);
 $('#dlg2').addEventListener('click', e => { if (e.target === e.currentTarget) closeDetail(); });
   const openReceipt = run(async id => {
   const r = await api(`/api/transactions/${id}/receipt`);

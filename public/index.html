@@ -761,9 +761,17 @@ const openItem = run(async id => {
   $('#lightbox').showModal();
 }
 $('#lightbox').addEventListener('click', () => $('#lightbox').close());
-document.addEventListener('click', e => {                       // click anywhere on a card (except its buttons) to open it
+document.addEventListener('click', e => {
   const card = e.target.closest('.item[data-id]');
-  if (card && !e.target.closest('button, a, input, select')) openItem(Number(card.dataset.id));
+  if (card && !e.target.closest('button, a, input, select')) {
+    const id = Number(card.dataset.id);
+    detailItem = cache[id];
+    if (detailItem && detailItem.image_url) {
+      zoomImage();
+    } else {
+      toast('No uploaded photo available for this item', false);
+    }
+  }
 });
 $('#dlg2').addEventListener('click', e => { if (e.target === e.currentTarget) closeDetail(); });
   const openReceipt = run(async id => {

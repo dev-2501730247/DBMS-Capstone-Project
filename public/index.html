@@ -786,7 +786,7 @@ $('#dlg2').addEventListener('click', e => { if (e.target === e.currentTarget) cl
       <div class="rc-bars">${bars}</div>
       <div class="rc-foot">Meet the seller on campus to collect your item.</div>
     </div>
-    <div class="rc-actions"><a class="btn" href="/api/transactions/${id}/receipt.pdf" download>Download PDF</a><button class="btn alt" onclick="closeDetail()">Close</button></div></div>`;
+    <div class="rc-actions"><a class="btn" href="${API_BASE}/api/transactions/${id}/receipt.pdf" download>Download PDF</a><button class="btn alt" onclick="closeDetail()">Close</button></div></div>`;
   $('#dlg2').showModal();
 });
 const msgSeller = run(async id => {

@@ -621,7 +621,7 @@ function itemCard(i, mode){
     <div class="body"><div><span class="tag">${esc(i.category)}</span><span class="tag">${esc(i.condition)}</span></div>
     <h3>${esc(i.title)}</h3><div class="muted">${esc(i.description||'')}</div>
     <div class="price">${inr(i.price)}</div>
-    <div class="seller"><span class="av a${Math.abs(i.seller_id||0)%4}">${esc((i.seller||'?')[0])}</span>${esc(i.seller)}${i.hostel?' · '+esc(i.hostel):''}</div>
+   <div class="seller"><button type="button" class="av a${Math.abs(i.seller_id||0)%4}" style="padding:0;cursor:pointer" onclick="event.stopPropagation();show('profile')" title="Open my profile">${esc((i.seller||'?')[0])}</button>${esc(i.seller)}${i.hostel?' · '+esc(i.hostel):''}</div>
     <div class="row">${actions}</div></div></div>`;
 }
 

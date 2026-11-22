@@ -7,6 +7,7 @@ const cloudinary = require('cloudinary').v2;
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const PDFDocument = require('pdfkit');
 const cfg = require('./db/config');
 
 const SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
@@ -322,6 +323,100 @@ app.post('/api/transactions', h(async (req, res) => {
     res.status(201).json({ txn_id: r.insertId });
   } catch (e) { await conn.rollback(); throw e; }
   finally { conn.release(); }
+}));
+/* ---------- Receipts (buyer, seller or admin only) ---------- */
+async function loadReceipt(req) {
+  const rows = await q(`
+    SELECT t.txn_id, t.txn_date, t.price_paid, t.payment_mode, t.buyer_id, i.seller_id,
+           i.title, i.\`condition\`, c.name AS category,
+           s.name AS seller, s.hostel AS seller_hostel,
+           b.name AS buyer, b.roll_no AS buyer_roll, b.hostel AS buyer_hostel
+    FROM transactions t
+    JOIN items i ON i.item_id = t.item_id
+    JOIN categories c ON c.category_id = i.category_id
+    JOIN users s ON s.user_id = i.seller_id
+    JOIN users b ON b.user_id = t.buyer_id
+    WHERE t.txn_id = ?`, [req.params.id]);
+  if (!rows.length) throw new HttpError(404, 'Receipt not found');
+  const r = rows[0];
+  if (r.buyer_id !== req.userId && r.seller_id !== req.userId && req.user.role !== 'admin')
+    throw new HttpError(403, 'This receipt is not yours');
+  return r;
+}
+
+app.get('/api/transactions/:id/receipt', h(async (req, res) => res.json(await loadReceipt(req))));
+
+function drawReceipt(doc, r) {
+  const INK = '#23364D', DEEP = '#3E6591', CORAL = '#FC6B64', SNOW = '#EEF1E8', SKY = '#AFC8D4', PINK = '#FDC4C3', CARD = '#F9FBF6', MUTE = '#4A6280';
+  const W = doc.page.width, H = doc.page.height, X = 28, CW = W - 56;
+  const no = 'UO-' + String(r.txn_id).padStart(6, '0');
+  const d = new Date(String(r.txn_date).replace(' ', 'T'));
+  const when = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' +
+               d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+  doc.rect(0, 0, W, H).fill(SNOW);
+  doc.save().rect(0, 0, W, 138).clip().rect(0, 0, W, 138).fill(SKY)
+     .circle(W - 24, 6, 74).fill(CORAL).circle(W - 96, 130, 34).fill(PINK).restore();
+  doc.image(path.join(__dirname, 'public', 'uniolx-logo.png'), X, 30, { height: 72 });
+  doc.font('Helvetica-Bold').fontSize(30).fillColor(INK).text('UniOlx', 140, 44, { lineBreak: false });
+  doc.font('Helvetica-Oblique').fontSize(11).fillColor(DEEP).text('Snag it. Flip it. Repeat.', 142, 82, { lineBreak: false });
+
+  doc.font('Helvetica-Bold').fontSize(9).fillColor(MUTE).text('PAYMENT RECEIPT', X, 158, { characterSpacing: 2, lineBreak: false });
+  doc.font('Helvetica-Bold').fontSize(22).fillColor(INK).text(no, X, 172, { lineBreak: false });
+  doc.font('Helvetica').fontSize(10).fillColor(MUTE).text(when, X, 178, { width: CW, align: 'right', lineBreak: false });
+
+  const cy = 214, ch = 282;                               // card with hard shadow, like the website
+  doc.roundedRect(X + 5, cy + 5, CW, ch, 16).fill(INK);
+  doc.roundedRect(X, cy, CW, ch, 16).lineWidth(2).fillAndStroke(CARD, INK);
+
+  let y = cy + 20;
+  doc.font('Helvetica-Bold').fontSize(8).fillColor(MUTE).text('ITEM', X + 18, y, { characterSpacing: 1.5, lineBreak: false });
+  y += 14;
+  doc.font('Helvetica-Bold').fontSize(17).fillColor(INK).text(r.title, X + 18, y, { width: CW - 36, height: 44, ellipsis: true });
+  y += Math.min(doc.heightOfString(r.title, { width: CW - 36 }), 44) + 8;
+  let px = X + 18; const pillY = y;
+  for (const t of [r.category, r.condition]) {              // pills
+    doc.font('Helvetica-Bold').fontSize(8.5);
+    const w = doc.widthOfString(t) + 18;
+    doc.roundedRect(px, y, w, 18, 9).lineWidth(1.5).fillAndStroke(PINK, INK);
+    doc.fillColor(INK).text(t, px, y + 5.5, { width: w, align: 'center', lineBreak: false });
+    px += w + 6;
+  }
+  y += 34;
+  const dash = () => { doc.moveTo(X + 18, y).lineTo(X + CW - 18, y).lineWidth(1).dash(3, { space: 3 }).strokeColor(INK).stroke().undash(); y += 14; };
+  const row = (label, value, sub) => {
+    doc.font('Helvetica').fontSize(9).fillColor(MUTE).text(label, X + 18, y + 2, { lineBreak: false });
+    doc.font('Helvetica-Bold').fontSize(11).fillColor(INK).text(value, X + 18, y, { width: CW - 36, align: 'right', lineBreak: false });
+    if (sub) doc.font('Helvetica').fontSize(8.5).fillColor(MUTE).text(sub, X + 18, y + 14, { width: CW - 36, align: 'right', lineBreak: false });
+    y += sub ? 32 : 22;
+  };
+  dash();
+  row('Sold by', r.seller, r.seller_hostel);
+  row('Bought by', r.buyer, [r.buyer_roll && 'Roll ' + r.buyer_roll, r.buyer_hostel].filter(Boolean).join(' · '));
+  row('Payment mode', r.payment_mode);
+  dash();
+  doc.font('Helvetica-Bold').fontSize(9).fillColor(MUTE).text('TOTAL PAID', X + 18, y + 12, { characterSpacing: 1.5, lineBreak: false });
+  doc.font('Helvetica-Bold').fontSize(30).fillColor(DEEP).text('Rs. ' + Number(r.price_paid).toLocaleString('en-IN'), X + 18, y + 2, { width: CW - 36, align: 'right', lineBreak: false });
+
+  doc.save().rotate(-10, { origin: [X + CW - 70, pillY + 10] });               // PAID stamp
+  doc.roundedRect(X + CW - 108, pillY - 8, 78, 34, 8).lineWidth(3).stroke(CORAL);
+  doc.font('Helvetica-Bold').fontSize(22).fillColor(CORAL).text('PAID', X + CW - 108, pillY - 1, { width: 78, align: 'center', lineBreak: false });
+  doc.restore();
+
+  doc.font('Helvetica-Bold').fontSize(12).fillColor(DEEP).text('Thanks for trading on campus!', 0, cy + ch + 22, { width: W, align: 'center', lineBreak: false });
+  doc.font('Helvetica').fontSize(8.5).fillColor(MUTE).text('Meet the seller on campus to collect your item. Keep this receipt.', 40, cy + ch + 40, { width: W - 80, align: 'center', lineBreak: false });
+  let bx = W / 2 - 66; const by = cy + ch + 62;                                // barcode
+  for (let k = 0; k < 40; k++) { const bw = 1 + ((k * 7 + r.txn_id) % 3); doc.rect(bx, by, bw, 20).fill(INK); bx += bw + 1.8; }
+  doc.rect(0, H - 10, W, 10).fill(CORAL);
+}
+
+app.get('/api/transactions/:id/receipt.pdf', h(async (req, res) => {
+  const r = await loadReceipt(req);
+  const no = 'UO-' + String(r.txn_id).padStart(6, '0');
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename="UniOlx-receipt-${no}.pdf"`);
+  const doc = new PDFDocument({ size: 'A5', margin: 0, info: { Title: `UniOlx receipt ${no}`, Author: 'UniOlx' } });
+  doc.pipe(res); drawReceipt(doc, r); doc.end();
 }));
 
 /* ---------- Reviews ---------- */

@@ -762,15 +762,19 @@ const openItem = run(async id => {
 }
 $('#lightbox').addEventListener('click', () => $('#lightbox').close());
 document.addEventListener('click', e => {
+  if (e.target.closest('[data-open-my-profile]')) return;
+
   const card = e.target.closest('.item[data-id]');
-  if (card && !e.target.closest('button, a, input, select')) {
-    const id = Number(card.dataset.id);
-    detailItem = cache[id];
-    if (detailItem && detailItem.image_url) {
-      zoomImage();
-    } else {
-      toast('No uploaded photo available for this item', false);
-    }
+
+  if (!card || e.target.closest('button, a, input, select')) return;
+
+  const id = Number(card.dataset.id);
+  detailItem = cache[id];
+
+  if (detailItem && detailItem.image_url) {
+    zoomImage();
+  } else {
+    toast('No uploaded photo available for this item', false);
   }
 });
 $('#dlg2').addEventListener('click', e => { if (e.target === e.currentTarget) closeDetail(); });

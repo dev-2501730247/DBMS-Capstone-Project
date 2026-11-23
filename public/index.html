@@ -621,7 +621,7 @@ function itemCard(i, mode){
     <div class="body"><div><span class="tag">${esc(i.category)}</span><span class="tag">${esc(i.condition)}</span></div>
     <h3>${esc(i.title)}</h3><div class="muted">${esc(i.description||'')}</div>
     <div class="price">${inr(i.price)}</div>
-   <div class="seller"><button type="button" class="av a${Math.abs(i.seller_id||0)%4}" data-open-my-profile title="Open my profile">${esc((i.seller||'?')[0])}</button>${esc(i.seller)}${i.hostel?' · '+esc(i.hostel):''}</div>
+   <div class="seller">${i.seller_id === ME.user_id ? `<button type="button" class="av a${Math.abs(i.seller_id||0)%4}" data-open-my-profile title="Open my profile">${esc((i.seller||'?')[0])}</button>` : `<span class="av a${Math.abs(i.seller_id||0)%4}">${esc((i.seller||'?')[0])}</span>`}${esc(i.seller)}${i.hostel?' · '+esc(i.hostel):''}</div>
     <div class="row">${actions}</div></div></div>`;
 }
 
@@ -746,7 +746,7 @@ const openItem = run(async id => {
     : mine ? '<span class="muted">This is your listing</span>'
     : `<button class="btn" onclick="closeDetail();buy(${id})">Buy now</button><button class="btn alt" onclick="closeDetail();msgSeller(${id})">${ni('chat')}Chat with seller</button><button class="btn alt" onclick="closeDetail();toggleWish(${id})">${on ? '♥ Saved' : '♡ Save'}</button>`;
   $('#dlg2').innerHTML = `<div class="detail"><button class="xbtn" onclick="closeDetail()" aria-label="Close">×</button>
-    <div class="thumb t${(i.category_id||0)%4}" onclick="zoomImage()" title="Click to enlarge"><span class="cutout">${catIcon(i.category)}</span>${img}<span class="zoomhint">Click to enlarge</span></div>${catIcon(i.category)}</span>${img}</div>
+    <div class="thumb t${(i.category_id||0)%4}" onclick="zoomImage()" title="Click to enlarge"><span class="cutout">${catIcon(i.category)}</span>${img}<span class="zoomhint">Click to enlarge</span></div>
     <div class="dbody"><div><span class="tag">${esc(i.category)}</span><span class="tag">${esc(i.condition)}</span></div>
     <h2>${esc(i.title)}</h2><div class="price">${inr(i.price)}</div>
     <div class="desc">${esc(i.description || 'No description added.')}</div>
@@ -755,23 +755,21 @@ const openItem = run(async id => {
     <div class="row">${acts}</div></div></div>`;
   $('#dlg2').showModal();
 });
-  function zoomImage(){
-    
-document.addEventListener('click', e => {
-  const photo = e.target.closest('.item[data-id] .thumb img');
-  if (!photo) return;
-
-  const card = photo.closest('.item[data-id]');
-  detailItem = cache[Number(card.dataset.id)];
-
-  if (detailItem) zoomImage();
-});
-
+function zoomImage(){
   const i = detailItem; if (!i) return;
   $('#lightbox').innerHTML = i.image_url ? `<img src="${esc(i.image_url)}" alt="${esc(i.title)}">` : `<div class="zoomart">${catIcon(i.category)}</div>`;
   $('#lightbox').showModal();
 }
 $('#lightbox').addEventListener('click', () => $('#lightbox').close());
+
+// Click a card: its photo enlarges, anywhere else on the card opens it
+document.addEventListener('click', e => {
+  const card = e.target.closest('.item[data-id]');
+  if (!card || e.target.closest('button, a, input, select, textarea')) return;
+  const id = Number(card.dataset.id);
+  if (e.target.closest('.thumb img')) { detailItem = cache[id]; if (detailItem) zoomImage(); return; }
+  openItem(id);
+});
 document.addEventListener('click', e => {
   const avatar = e.target.closest('#whoami .av');
 

@@ -756,6 +756,17 @@ const openItem = run(async id => {
   $('#dlg2').showModal();
 });
   function zoomImage(){
+    
+document.addEventListener('click', e => {
+  const photo = e.target.closest('.item[data-id] .thumb img');
+  if (!photo) return;
+
+  const card = photo.closest('.item[data-id]');
+  detailItem = cache[Number(card.dataset.id)];
+
+  if (detailItem) zoomImage();
+});
+
   const i = detailItem; if (!i) return;
   $('#lightbox').innerHTML = i.image_url ? `<img src="${esc(i.image_url)}" alt="${esc(i.title)}">` : `<div class="zoomart">${catIcon(i.category)}</div>`;
   $('#lightbox').showModal();

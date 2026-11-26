@@ -2,6 +2,15 @@
 
 *Snag it. Flip it. Repeat.*
 
+
+## 🌐 Live Demo
+**Website:** https://uniolx.yashvats20-29.workers.dev/
+
+- Front end: Cloudflare Workers
+- Back end (API): Render
+- Database: TiDB Cloud
+- Note: the back end is on a free plan, so the first load after a while can take up to a minute.
+
 A full-stack marketplace where students sign up, list, buy and sell used items, chat with sellers and leave reviews.
 
 **Stack:** MySQL 8 · Node.js + Express (REST API) · bcrypt + JWT cookie auth · HTML/CSS/JS frontend
